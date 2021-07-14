@@ -105,7 +105,7 @@ public class EmbeddedUserPersistServiceImpl implements UserPersistService {
     
     @Override
     public User findUserByUsername(String username) {
-        String sql = "SELECT username,password FROM users WHERE username=? ";
+        String sql = "SELECT username,password,kps FROM users WHERE username=? ";
         return databaseOperate.queryOne(sql, new Object[] {username}, USER_ROW_MAPPER);
     }
     
@@ -115,7 +115,7 @@ public class EmbeddedUserPersistServiceImpl implements UserPersistService {
         PaginationHelper<User> helper = persistService.createPaginationHelper();
         
         String sqlCountRows = "select count(*) from users where ";
-        String sqlFetchRows = "select username,password from users where ";
+        String sqlFetchRows = "select username,password,kps from users where ";
         
         String where = " 1=1 ";
         Page<User> pageInfo = helper

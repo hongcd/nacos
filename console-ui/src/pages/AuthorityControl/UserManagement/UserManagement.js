@@ -68,6 +68,14 @@ class UserManagement extends React.Component {
   }
 
   render() {
+    let token = {};
+    try {
+      token = JSON.parse(localStorage.token);
+    } catch (e) {
+      console.log('Token Error', localStorage.token, e);
+      return;
+    }
+    const username = token.username;
     const { users, locale } = this.props;
     const { loading, pageSize, pageNo, createUserVisible, passwordResetUser } = this.state;
     return (
@@ -95,33 +103,38 @@ class UserManagement extends React.Component {
           <Table.Column
             title={locale.operation}
             dataIndex="username"
-            cell={username => (
-              <>
-                <Button
-                  type="primary"
-                  onClick={() => this.setState({ passwordResetUser: username })}
-                >
-                  {locale.resetPassword}
-                </Button>
-                &nbsp;&nbsp;&nbsp;
-                <Button
-                  type="primary"
-                  warning
-                  onClick={() =>
-                    Dialog.confirm({
-                      title: locale.deleteUser,
-                      content: locale.deleteUserTip,
-                      onOk: () =>
-                        deleteUser(username).then(() => {
-                          this.setState({ pageNo: 1 }, () => this.getUsers());
-                        }),
-                    })
-                  }
-                >
-                  {locale.deleteUser}
-                </Button>
-              </>
-            )}
+            cell={(value, index, record) => {
+              if (value === 'nacos' && username !== 'nacos') {
+                return null;
+              }
+              return (
+                <>
+                  <Button
+                    type="primary"
+                    onClick={() => this.setState({ passwordResetUser: username })}
+                  >
+                    {locale.resetPassword}
+                  </Button>
+                  &nbsp;&nbsp;&nbsp;
+                  <Button
+                    type="primary"
+                    warning
+                    onClick={() =>
+                      Dialog.confirm({
+                        title: locale.deleteUser,
+                        content: locale.deleteUserTip,
+                        onOk: () =>
+                          deleteUser(username).then(() => {
+                            this.setState({ pageNo: 1 }, () => this.getUsers());
+                          }),
+                      })
+                    }
+                  >
+                    {locale.deleteUser}
+                  </Button>
+                </>
+              );
+            }}
           />
         </Table>
         {users.totalCount > pageSize && (

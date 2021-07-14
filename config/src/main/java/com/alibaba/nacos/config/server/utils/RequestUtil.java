@@ -19,6 +19,8 @@ package com.alibaba.nacos.config.server.utils;
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.auth.model.User;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -80,6 +82,14 @@ public class RequestUtil {
         }
     
         return (User) userObj;
+    }
+
+    /**
+     * get the user of the client application in the Attribute.
+     * @return may be return null
+     */
+    public static User getUser() {
+        return getUser(((ServletRequestAttributes) (RequestContextHolder.currentRequestAttributes())).getRequest());
     }
     
     /**

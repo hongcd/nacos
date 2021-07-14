@@ -66,6 +66,14 @@ class RolesManagement extends React.Component {
   }
 
   render() {
+    let token = {};
+    try {
+      token = JSON.parse(localStorage.token);
+    } catch (e) {
+      console.log('Token Error', localStorage.token, e);
+      return;
+    }
+    const username = token.username;
     const { roles, locale } = this.props;
     const { loading, pageSize, pageNo, createRoleVisible, passwordResetUser } = this.state;
     return (
@@ -90,7 +98,7 @@ class RolesManagement extends React.Component {
             title={locale.operation}
             dataIndex="role"
             cell={(value, index, record) => {
-              if (value === 'ROLE_ADMIN') {
+              if (value === 'ROLE_ADMIN' && username !== 'nacos') {
                 return null;
               }
               return (

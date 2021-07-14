@@ -276,8 +276,13 @@ public class Constants {
     
     public static final String CONFIG_EXPORT_METADATA_NEW = ".metadata.yml";
 
-
-    //region extend
+    /**
+     * default kp.
+     */
     public static final String DEFAULT_KP = "1";
-    //endregion
+
+    /**
+     * default admin username.
+     */
+    public static final String DEFAULT_ADMIN_USER_NAME = "nacos";
 }

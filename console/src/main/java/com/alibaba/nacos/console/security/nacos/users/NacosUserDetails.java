@@ -16,16 +16,12 @@
 
 package com.alibaba.nacos.console.security.nacos.users;
 
-import com.alibaba.nacos.api.common.Constants;
-import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.alibaba.nacos.config.server.model.User;
-import com.google.common.collect.Lists;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.*;
+import java.util.Collection;
 
 /**
  * custom user.

@@ -61,8 +61,10 @@ public class NamespaceController {
     
     @Autowired
     private PersistService persistService;
+
     @Autowired
     private AuthManager authManager;
+
     @Autowired
     private NacosRoleServiceImpl nacosRoleService;
     
