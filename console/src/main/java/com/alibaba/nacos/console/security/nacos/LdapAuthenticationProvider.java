@@ -43,6 +43,7 @@ import javax.naming.ldap.LdapContext;
 import java.util.Hashtable;
 import java.util.List;
 
+import static com.alibaba.nacos.config.server.constant.Constants.DEFAULT_KP;
 import static com.alibaba.nacos.console.security.nacos.roles.NacosRoleServiceImpl.GLOBAL_ADMIN_ROLE;
 
 /**
@@ -107,6 +108,7 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
             User user = new User();
             user.setUsername(LDAP_PREFIX + username);
             user.setPassword(nacosPassword);
+            user.setKps(DEFAULT_KP);
             userDetails = new NacosUserDetails(user);
         }
         return new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());

@@ -30,6 +30,8 @@ public class User implements Serializable {
     private String username;
     
     private String password;
+
+    private String kps;
     
     public String getPassword() {
         return password;
@@ -45,5 +47,13 @@ public class User implements Serializable {
     
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getKps() {
+        return kps;
+    }
+
+    public void setKps(String kps) {
+        this.kps = kps;
     }
 }

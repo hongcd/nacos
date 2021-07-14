@@ -209,4 +209,8 @@ public class Constants {
     public static final String LOCATION_TAG = "Location-Tag";
     
     public static final String CHARSET_KEY = "charset";
+
+    //region extends
+    public static final String COMMA = ",";
+    //endregion
 }

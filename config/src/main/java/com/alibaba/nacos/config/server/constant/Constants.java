@@ -275,4 +275,9 @@ public class Constants {
     public static final String CONFIG_EXPORT_METADATA = ".meta.yml";
     
     public static final String CONFIG_EXPORT_METADATA_NEW = ".metadata.yml";
+
+
+    //region extend
+    public static final String DEFAULT_KP = "1";
+    //endregion
 }

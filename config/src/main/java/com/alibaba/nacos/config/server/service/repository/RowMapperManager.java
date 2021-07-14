@@ -545,6 +545,7 @@ public final class RowMapperManager {
             User user = new User();
             user.setUsername(rs.getString("username"));
             user.setPassword(rs.getString("password"));
+            user.setKps(rs.getString("kps"));
             return user;
         }
     }

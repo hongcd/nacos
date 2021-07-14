@@ -197,8 +197,9 @@ CREATE TABLE `tenant_info` (
 CREATE TABLE users (
 	username varchar(50) NOT NULL PRIMARY KEY,
 	password varchar(500) NOT NULL,
-	enabled boolean NOT NULL
-);
+	enabled boolean NOT NULL,
+	`kps` varchar(128) NOT NULL DEFAULT ',1,' COMMENT 'kps'
+) comment '用户表';
 
 CREATE TABLE roles (
 	username varchar(50) NOT NULL,

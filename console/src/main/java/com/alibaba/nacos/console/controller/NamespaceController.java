@@ -16,8 +16,12 @@
 
 package com.alibaba.nacos.console.controller;
 
+import com.alibaba.nacos.auth.AuthManager;
 import com.alibaba.nacos.auth.annotation.Secured;
 import com.alibaba.nacos.auth.common.ActionTypes;
+import com.alibaba.nacos.auth.exception.AccessException;
+import com.alibaba.nacos.auth.model.Permission;
+import com.alibaba.nacos.auth.model.User;
 import com.alibaba.nacos.common.model.RestResult;
 import com.alibaba.nacos.common.model.RestResultUtils;
 import com.alibaba.nacos.config.server.model.TenantInfo;
@@ -26,6 +30,7 @@ import com.alibaba.nacos.console.enums.NamespaceTypeEnum;
 import com.alibaba.nacos.console.model.Namespace;
 import com.alibaba.nacos.console.model.NamespaceAllInfo;
 import com.alibaba.nacos.console.security.nacos.NacosAuthConfig;
+import com.alibaba.nacos.console.security.nacos.roles.NacosRoleServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,6 +48,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import static com.alibaba.nacos.config.server.constant.Constants.DEFAULT_KP;
+
 /**
  * namespace service.
  *
@@ -54,6 +61,10 @@ public class NamespaceController {
     
     @Autowired
     private PersistService persistService;
+    @Autowired
+    private AuthManager authManager;
+    @Autowired
+    private NacosRoleServiceImpl nacosRoleService;
     
     private final Pattern namespaceIdCheckPattern = Pattern.compile("^[\\w-]+");
     
@@ -70,8 +81,11 @@ public class NamespaceController {
     private static final String DEFAULT_NAMESPACE_DESCRIPTION = "Public Namespace";
     
     private static final String DEFAULT_TENANT = "";
-    
-    private static final String DEFAULT_KP = "1";
+
+    boolean hasNamespacePermission(String userName, String namespaceId, String action) {
+        Permission permission = new Permission(namespaceId + ":*:*", action);
+        return nacosRoleService.hasPermission(userName, permission);
+    }
     
     /**
      * Get namespace list.
@@ -81,14 +95,22 @@ public class NamespaceController {
      * @return namespace list
      */
     @GetMapping
-    public RestResult<List<Namespace>> getNamespaces(HttpServletRequest request, HttpServletResponse response) {
+    public RestResult<List<Namespace>> getNamespaces(HttpServletRequest request, HttpServletResponse response) throws AccessException {
         // TODO 获取用kp
         List<TenantInfo> tenantInfos = persistService.findTenantByKp(DEFAULT_KP);
         Namespace namespace0 = new Namespace("", DEFAULT_NAMESPACE, DEFAULT_QUOTA, persistService.configInfoCount(DEFAULT_TENANT),
                 NamespaceTypeEnum.GLOBAL.getType());
+        User user = authManager.login(request);
+        String userName = user.getUserName();
+
         List<Namespace> namespaces = new ArrayList<Namespace>();
-        namespaces.add(namespace0);
+        if (hasNamespacePermission(userName, namespace0.getNamespace(), ActionTypes.READ.toString())) {
+            namespaces.add(namespace0);
+        }
         for (TenantInfo tenantInfo : tenantInfos) {
+            if (!hasNamespacePermission(userName, tenantInfo.getTenantId(), ActionTypes.READ.toString())) {
+                continue;
+            }
             int configCount = persistService.configInfoCount(tenantInfo.getTenantId());
             Namespace namespaceTmp = new Namespace(tenantInfo.getTenantId(), tenantInfo.getTenantName(), DEFAULT_QUOTA,
                     configCount, NamespaceTypeEnum.CUSTOM.getType());

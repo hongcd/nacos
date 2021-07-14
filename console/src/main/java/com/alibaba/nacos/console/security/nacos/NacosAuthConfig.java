@@ -77,6 +77,9 @@ public class NacosAuthConfig extends WebSecurityConfigurerAdapter {
     
     @Autowired
     private LdapAuthenticationProvider ldapAuthenticationProvider;
+
+    @Autowired
+    private AppSecretAuthenticationProvider appSecretAuthenticationProvider;
     
     @Bean(name = BeanIds.AUTHENTICATION_MANAGER)
     @Override
@@ -108,7 +111,7 @@ public class NacosAuthConfig extends WebSecurityConfigurerAdapter {
         if (AuthSystemTypes.NACOS.name().equalsIgnoreCase(authConfigs.getNacosAuthSystemType())) {
             auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
         } else if (AuthSystemTypes.LDAP.name().equalsIgnoreCase(authConfigs.getNacosAuthSystemType())) {
-            auth.authenticationProvider(ldapAuthenticationProvider);
+            auth.authenticationProvider(appSecretAuthenticationProvider).authenticationProvider(ldapAuthenticationProvider);
         }
     }
     

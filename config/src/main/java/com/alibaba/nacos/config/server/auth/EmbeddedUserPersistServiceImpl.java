@@ -64,7 +64,12 @@ public class EmbeddedUserPersistServiceImpl implements UserPersistService {
             EmbeddedStorageContextUtils.cleanAllContext();
         }
     }
-    
+
+    @Override
+    public void createUser(String username, String password, List<String> kps) {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Execute delete user operation.
      *

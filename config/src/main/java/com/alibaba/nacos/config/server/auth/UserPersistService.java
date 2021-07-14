@@ -39,6 +39,15 @@ public interface UserPersistService {
     void createUser(String username, String password);
 
     /**
+     * mtc-custom
+     * create user with kps
+     * @param username
+     * @param password
+     * @param kps
+     */
+    void createUser(String username, String password, List<String> kps);
+
+    /**
      * delete user by username.
      *
      * @param username username

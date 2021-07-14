@@ -19,8 +19,8 @@ package com.alibaba.nacos.config.server.auth;
 import com.alibaba.nacos.config.server.configuration.ConditionOnExternalStorage;
 import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.model.User;
-import com.alibaba.nacos.config.server.service.repository.extrnal.ExternalStoragePersistServiceImpl;
 import com.alibaba.nacos.config.server.service.repository.PaginationHelper;
+import com.alibaba.nacos.config.server.service.repository.extrnal.ExternalStoragePersistServiceImpl;
 import com.alibaba.nacos.config.server.utils.LogUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Conditional;
@@ -31,8 +31,12 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.StringJoiner;
 
+import static com.alibaba.nacos.api.common.Constants.COMMA;
+import static com.alibaba.nacos.config.server.constant.Constants.DEFAULT_KP;
 import static com.alibaba.nacos.config.server.service.repository.RowMapperManager.USER_ROW_MAPPER;
 
 /**
@@ -62,16 +66,22 @@ public class ExternalUserPersistServiceImpl implements UserPersistService {
      */
     @Override
     public void createUser(String username, String password) {
-        String sql = "INSERT into users (username, password, enabled) VALUES (?, ?, ?)";
-        
+        createUser(username, password, Collections.singletonList(DEFAULT_KP));
+    }
+
+    @Override
+    public void createUser(String username, String password, List<String> kps) {
+        StringJoiner sj = new StringJoiner(COMMA);
+        kps.forEach(sj::add);
+        String sql = "INSERT into users (username, password, enabled, kps) VALUES (?, ?, ?, ?)";
         try {
-            jt.update(sql, username, password, true);
+            jt.update(sql, username, password, true, sj.toString());
         } catch (CannotGetJdbcConnectionException e) {
-            LogUtil.FATAL_LOG.error("[db-error] " + e.toString(), e);
+            LogUtil.FATAL_LOG.error("[db-error] " + e, e);
             throw e;
         }
     }
-    
+
     /**
      * Execute delete user operation.
      *
@@ -112,7 +122,7 @@ public class ExternalUserPersistServiceImpl implements UserPersistService {
      */
     @Override
     public User findUserByUsername(String username) {
-        String sql = "SELECT username,password FROM users WHERE username=? ";
+        String sql = "SELECT username,password, kps FROM users WHERE username=? ";
         try {
             return this.jt.queryForObject(sql, new Object[] {username}, USER_ROW_MAPPER);
         } catch (CannotGetJdbcConnectionException e) {
