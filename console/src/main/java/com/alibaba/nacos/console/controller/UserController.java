@@ -37,6 +37,8 @@ import com.alibaba.nacos.console.security.nacos.users.NacosUser;
 import com.alibaba.nacos.console.security.nacos.users.NacosUserDetailsServiceImpl;
 import com.alibaba.nacos.console.utils.PasswordEncoderUtil;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -57,6 +59,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.StringTokenizer;
+
+import static com.alibaba.nacos.api.common.Constants.COMMA;
+import static com.alibaba.nacos.config.server.constant.Constants.DEFAULT_ADMIN_USER_NAME;
+import static com.alibaba.nacos.config.server.constant.Constants.DEFAULT_KP;
 
 /**
  * User related methods entry.
@@ -85,6 +92,30 @@ public class UserController {
     
     @Autowired
     private NacosAuthManager authManager;
+
+    List<String> getKps() {
+        HttpServletRequest request = RequestUtil.getRequest();
+        String kps = request.getParameter("kps");
+        List<String> kpList = Lists.newArrayList();
+
+        if (StringUtils.isNotBlank(kps)) {
+            com.alibaba.nacos.auth.model.User user = Objects.requireNonNull(RequestUtil.getUser(request));
+            StringTokenizer st = new StringTokenizer(kps, COMMA);
+            boolean isAdminUser = DEFAULT_ADMIN_USER_NAME.equals(user.getUserName());
+            while (st.hasMoreTokens()) {
+                String kp = st.nextToken();
+                if (!DEFAULT_KP.equals(kp) && !isAdminUser) {
+                    throw new IllegalArgumentException("invalid kp: " + kps);
+                }
+                kpList.add(kp);
+            }
+        }
+
+        if (kpList.isEmpty()) {
+            kpList.add(DEFAULT_KP);
+        }
+        return kpList;
+    }
     
     /**
      * Create a new user.
@@ -103,7 +134,7 @@ public class UserController {
         if (user != null) {
             throw new IllegalArgumentException("user '" + username + "' already exist!");
         }
-        userDetailsService.createUser(username, PasswordEncoderUtil.encode(password));
+        userDetailsService.createUser(username, PasswordEncoderUtil.encode(password), getKps());
         return RestResultUtils.success("create user ok!");
     }
     
@@ -142,7 +173,7 @@ public class UserController {
      */
     @PutMapping
     @Secured(resource = NacosAuthConfig.UPDATE_PASSWORD_ENTRY_POINT, action = ActionTypes.WRITE)
-    public Object updateUser(@RequestParam String username, @RequestParam String newPassword,
+    public Object updateUser(@RequestParam String username, @RequestParam(required = false) String newPassword,
             HttpServletResponse response, HttpServletRequest request) throws IOException {
         // admin or same user
         if (!hasPermission(username, request)) {
@@ -153,9 +184,12 @@ public class UserController {
         if (user == null) {
             throw new IllegalArgumentException("user " + username + " not exist!");
         }
-        
-        userDetailsService.updateUserPassword(username, PasswordEncoderUtil.encode(newPassword));
-        
+        List<String> kps = Lists.newArrayList();
+        String kpsStr = request.getParameter("kps");
+        if (StringUtils.isNotBlank(kpsStr)) {
+            kps = getKps();
+        }
+        userDetailsService.updateUser(username, newPassword, kps);
         return RestResultUtils.success("update user ok!");
     }
 

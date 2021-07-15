@@ -197,7 +197,8 @@ CREATE TABLE `tenant_info` (
 CREATE TABLE `users` (
 	`username` varchar(50) NOT NULL PRIMARY KEY,
 	`password` varchar(500) NOT NULL,
-	`enabled` boolean NOT NULL
+	`enabled` boolean NOT NULL,
+    `kps` varchar(128) NOT NULL DEFAULT '1' COMMENT 'kps，用逗号","分割'
 );
 
 CREATE TABLE `roles` (
@@ -213,6 +214,6 @@ CREATE TABLE `permissions` (
     UNIQUE INDEX `uk_role_permission` (`role`,`resource`,`action`) USING BTREE
 );
 
-INSERT INTO users (username, password, enabled) VALUES ('nacos', '$2a$10$EuWPZHzz32dJN7jexM34MOeYirDdFAZm2kuWj7VEOJhhZkDrxfvUu', TRUE);
+INSERT INTO users (username, password, enabled, kps) VALUES ('nacos', '$2a$10$EuWPZHzz32dJN7jexM34MOeYirDdFAZm2kuWj7VEOJhhZkDrxfvUu', TRUE, '*');
 
 INSERT INTO roles (username, role) VALUES ('nacos', 'ROLE_ADMIN');

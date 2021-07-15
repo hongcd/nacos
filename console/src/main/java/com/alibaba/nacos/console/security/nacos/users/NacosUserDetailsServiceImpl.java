@@ -20,7 +20,10 @@ import com.alibaba.nacos.auth.common.AuthConfigs;
 import com.alibaba.nacos.config.server.auth.UserPersistService;
 import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.model.User;
+import com.alibaba.nacos.console.utils.PasswordEncoderUtil;
 import com.alibaba.nacos.core.utils.Loggers;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,7 +33,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.alibaba.nacos.api.common.Constants.COMMA;
 
 /**
  * Custem user service.
@@ -84,6 +90,22 @@ public class NacosUserDetailsServiceImpl implements UserDetailsService {
     public void updateUserPassword(String username, String password) {
         userPersistService.updateUserPassword(username, password);
     }
+
+    public void updateUser(String username, String password, List<String> kps) {
+        if (StringUtils.isBlank(username)) {
+            return;
+        }
+        if (StringUtils.isBlank(password) && CollectionUtils.isEmpty(kps)) {
+            return;
+        }
+        if (CollectionUtils.isEmpty(kps)) {
+            userPersistService.updateUserPassword(username, PasswordEncoderUtil.encode(password));
+            return;
+        }
+        StringJoiner sj = new StringJoiner(COMMA);
+        kps.forEach(sj::add);
+        userPersistService.updateKps(username, sj.toString());
+    }
     
     public Page<User> getUsersFromDatabase(int pageNo, int pageSize) {
         return userPersistService.getUsers(pageNo, pageSize);
@@ -107,6 +129,10 @@ public class NacosUserDetailsServiceImpl implements UserDetailsService {
 
     public void createUser(String username, String password) {
         userPersistService.createUser(username, password);
+    }
+
+    public void createUser(String username, String password, List<String> kps) {
+        userPersistService.createUser(username, password, kps);
     }
     
     public void deleteUser(String username) {

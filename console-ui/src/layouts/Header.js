@@ -83,7 +83,7 @@ class Header extends React.Component {
       language = 'en-us',
       location: { pathname },
     } = this.props;
-    const { home, docs, blog, community, languageSwitchButton } = locale;
+    const { home, docs, blog, community, languageSwitchButton, mtcWiki } = locale;
     const { passwordResetUser = '' } = this.state;
     const BASE_URL = `https://nacos.io/${language.toLocaleLowerCase()}/`;
     const NAV_MENU = [
@@ -91,6 +91,11 @@ class Header extends React.Component {
       { id: 2, title: docs, link: `${BASE_URL}docs/what-is-nacos.html` },
       { id: 3, title: blog, link: `${BASE_URL}blog/index.html` },
       { id: 4, title: community, link: `${BASE_URL}community/index.html` },
+      {
+        id: 5,
+        title: mtcWiki,
+        link: 'http://wiki.heisea.cn/pages/viewpage.action?pageId=35319180',
+      },
     ];
     return (
       <>
@@ -109,7 +114,6 @@ class Header extends React.Component {
               <Dropdown trigger={<div className="logout">{this.getUsername()}</div>}>
                 <Menu>
                   <Menu.Item onClick={this.logout}>{locale.logout}</Menu.Item>
-                  <Menu.Item onClick={this.changePassword}>{locale.changePassword}</Menu.Item>
                 </Menu>
               </Dropdown>
             )}

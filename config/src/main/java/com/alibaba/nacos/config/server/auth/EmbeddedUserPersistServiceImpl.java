@@ -102,7 +102,12 @@ public class EmbeddedUserPersistServiceImpl implements UserPersistService {
             EmbeddedStorageContextUtils.cleanAllContext();
         }
     }
-    
+
+    @Override
+    public void updateKps(String username, String kps) {
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     public User findUserByUsername(String username) {
         String sql = "SELECT username,password,kps FROM users WHERE username=? ";

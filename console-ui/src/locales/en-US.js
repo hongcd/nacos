@@ -20,6 +20,7 @@ const I18N_CONF = {
     docs: 'DOCS',
     blog: 'BLOG',
     community: 'COMMUNITY',
+    mtcWiki: 'MTC Wiki',
     languageSwitchButton: '中',
     logout: 'logout',
     changePassword: 'modify password',
@@ -557,9 +558,11 @@ const I18N_CONF = {
   NewUser: {
     createUser: 'Create user',
     username: 'Username',
+    kps: 'kps',
     password: 'Password',
     rePassword: 'Repeat',
     usernamePlaceholder: 'Please Enter Username',
+    kpsPlaceholder: 'Please Enter kps',
     passwordPlaceholder: 'Please Enter Password',
     rePasswordPlaceholder: 'Please Enter Repeat Password',
     usernameError: 'User name cannot be empty!',
@@ -577,6 +580,12 @@ const I18N_CONF = {
     passwordError: 'Password cannot be empty!',
     rePasswordError: 'Repeat Password cannot be empty!',
     rePasswordError2: 'Passwords are inconsistent!',
+  },
+  UpdateUser: {
+    updateUser: 'Update User',
+    username: 'Username',
+    kps: 'kps',
+    kpsPlaceholder: 'Please Enter kps',
   },
   RolesManagement: {
     roleManagement: 'Role management',

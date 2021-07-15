@@ -78,6 +78,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.alibaba.nacos.api.common.Constants.ALL_PATTERN;
 import static com.alibaba.nacos.config.server.service.repository.RowMapperManager.CONFIG_ADVANCE_INFO_ROW_MAPPER;
 import static com.alibaba.nacos.config.server.service.repository.RowMapperManager.CONFIG_ALL_INFO_ROW_MAPPER;
 import static com.alibaba.nacos.config.server.service.repository.RowMapperManager.CONFIG_INFO_AGGR_ROW_MAPPER;
@@ -2466,7 +2467,7 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
     
     @Override
     public List<TenantInfo> findTenantByKp(String kp) {
-        String sql = "SELECT tenant_id,tenant_name,tenant_desc FROM tenant_info WHERE kp=?";
+        String sql = "SELECT tenant_id,tenant_name,tenant_desc,kp FROM tenant_info WHERE kp=?";
         try {
             return this.jt.query(sql, new Object[] {kp}, TENANT_INFO_ROW_MAPPER);
         } catch (CannotGetJdbcConnectionException e) {
@@ -2479,10 +2480,46 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
             throw new RuntimeException(e);
         }
     }
-    
+
+    @Override
+    public List<TenantInfo> findTenantByKps(List<String> kps) {
+        if (CollectionUtils.isEmpty(kps)) {
+            return Collections.emptyList();
+        }
+        String sql = "SELECT tenant_id,tenant_name,tenant_desc,kp FROM tenant_info ";
+        Object[] args = new Object[kps.size()];
+        StringBuilder sb = new StringBuilder(" where kp in(");
+        for (int i = 0; i < kps.size(); i++) {
+            String kp = kps.get(i);
+            if (ALL_PATTERN.equals(kp)) {
+                args = new Object[0];
+                sb = new StringBuilder();
+                break;
+            }
+            sb.append("?");
+            args[i] = kp;
+            if (i == kps.size() - 1) {
+                sb.append(")");
+            } else {
+                sb.append(",");
+            }
+        }
+        try {
+            return this.jt.query(sql + sb, args, TENANT_INFO_ROW_MAPPER);
+        } catch (CannotGetJdbcConnectionException e) {
+            LogUtil.FATAL_LOG.error("[db-error] " + e.toString(), e);
+            throw e;
+        } catch (EmptyResultDataAccessException e) {
+            return Collections.emptyList();
+        } catch (Exception e) {
+            LogUtil.FATAL_LOG.error("[db-other-error]" + e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public TenantInfo findTenantByKp(String kp, String tenantId) {
-        String sql = "SELECT tenant_id,tenant_name,tenant_desc FROM tenant_info WHERE kp=? AND tenant_id=?";
+        String sql = "SELECT tenant_id,tenant_name,tenant_desc,kp FROM tenant_info WHERE kp=? AND tenant_id=?";
         try {
             return jt.queryForObject(sql, new Object[] {kp, tenantId}, TENANT_INFO_ROW_MAPPER);
         } catch (CannotGetJdbcConnectionException e) {

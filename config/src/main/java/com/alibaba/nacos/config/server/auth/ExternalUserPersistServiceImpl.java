@@ -113,7 +113,18 @@ public class ExternalUserPersistServiceImpl implements UserPersistService {
             throw e;
         }
     }
-    
+
+    @Override
+    public void updateKps(String username, String kps) {
+        String sql = "UPDATE users SET kps = ? WHERE username=?";
+        try {
+            jt.update(sql, kps, username);
+        } catch (CannotGetJdbcConnectionException e) {
+            LogUtil.FATAL_LOG.error("[db-error] " + e.toString(), e);
+            throw e;
+        }
+    }
+
     /**
      * Execute find user by username operation.
      *

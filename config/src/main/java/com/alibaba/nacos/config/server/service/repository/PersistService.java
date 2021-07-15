@@ -1213,7 +1213,14 @@ public interface PersistService {
      * @return {@link TenantInfo} list
      */
     List<TenantInfo> findTenantByKp(String kp);
-    
+
+    /**
+     * Query tenant info by kps.
+     * @param kps kps
+     * @return {@link TenantInfo} list
+     */
+    List<TenantInfo> findTenantByKps(List<String> kps);
+
     /**
      * Query tenant info.
      *

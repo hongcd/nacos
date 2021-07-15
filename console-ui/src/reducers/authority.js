@@ -57,8 +57,8 @@ const getUsers = params => dispatch =>
  * 创建用户
  * @param {*} param0
  */
-const createUser = ([username, password]) =>
-  request.post('v1/auth/users', { username, password }).then(res => successMsg(res));
+const createUser = ([username, password, kps]) =>
+  request.post('v1/auth/users', { username, password, kps }).then(res => successMsg(res));
 
 /**
  * 通过username 模糊匹配
@@ -80,6 +80,13 @@ const deleteUser = username =>
  */
 const passwordReset = ([username, newPassword]) =>
   request.put('v1/auth/users', { username, newPassword }).then(res => successMsg(res));
+
+/**
+ * 修改kps
+ * @param {*} param0
+ */
+const updateKps = ([username, kps]) =>
+  request.put('v1/auth/users', { username, kps }).then(res => successMsg(res));
 
 /**
  * 角色列表
@@ -152,6 +159,7 @@ export {
   createUser,
   deleteUser,
   passwordReset,
+  updateKps,
   searchRoles,
   getRoles,
   createRole,

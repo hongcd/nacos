@@ -18,10 +18,17 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Dialog, Pagination, Table, ConfigProvider } from '@alifd/next';
 import { connect } from 'react-redux';
-import { getUsers, createUser, deleteUser, passwordReset } from '../../../reducers/authority';
+import {
+  getUsers,
+  createUser,
+  deleteUser,
+  passwordReset,
+  updateKps,
+} from '../../../reducers/authority';
 import RegionGroup from '../../../components/RegionGroup';
 import NewUser from './NewUser';
 import PasswordReset from './PasswordReset';
+import UpdateUser from './UpdateUser';
 
 import './UserManagement.scss';
 
@@ -75,7 +82,8 @@ class UserManagement extends React.Component {
       console.log('Token Error', localStorage.token, e);
       return;
     }
-    const username = token.username;
+    const currentUsername = token.username;
+    const isAdminUser = currentUsername === 'nacos';
     const { users, locale } = this.props;
     const { loading, pageSize, pageNo, createUserVisible, passwordResetUser } = this.state;
     return (
@@ -84,6 +92,7 @@ class UserManagement extends React.Component {
         <div className="filter-panel">
           <Button
             type="primary"
+            disabled={!isAdminUser}
             onClick={() => this.setState({ createUserVisible: true })}
             style={{ marginRight: 20 }}
           >
@@ -103,8 +112,8 @@ class UserManagement extends React.Component {
           <Table.Column
             title={locale.operation}
             dataIndex="username"
-            cell={(value, index, record) => {
-              if (value === 'nacos' && username !== 'nacos') {
+            cell={username => {
+              if (!isAdminUser) {
                 return null;
               }
               return (
@@ -156,10 +165,10 @@ class UserManagement extends React.Component {
           }
           onCancel={() => this.colseCreateUser()}
         />
-        <PasswordReset
+        <UpdateUser
           username={passwordResetUser}
           onOk={user =>
-            passwordReset(user).then(res => {
+            updateKps(user).then(res => {
               this.getUsers();
               return res;
             })

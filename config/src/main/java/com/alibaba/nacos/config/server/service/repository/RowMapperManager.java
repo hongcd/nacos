@@ -534,6 +534,7 @@ public final class RowMapperManager {
             info.setTenantId(rs.getString("tenant_id"));
             info.setTenantName(rs.getString("tenant_name"));
             info.setTenantDesc(rs.getString("tenant_desc"));
+            info.setKp(rs.getString("kp"));
             return info;
         }
     }

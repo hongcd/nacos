@@ -44,6 +44,11 @@ module.exports = {
         text: 'COMMUNITY',
         link: 'https://nacos.io/en-us/community',
       },
+      {
+        key: 'mtcWiki',
+        text: 'MTC Wiki',
+        link: 'http://wiki.heisea.cn/pages/viewpage.action?pageId=35319180',
+      },
       // {
       //   text: 'ALI-SUPPORT',
       //   href: 'https://developer.aliyun.com/opensource/project/nacos',
@@ -103,6 +108,11 @@ module.exports = {
         key: 'community',
         text: '社区',
         link: 'https://nacos.io/zh-cn/community/index.html',
+      },
+      {
+        key: 'mtcWiki',
+        text: '医药wiki',
+        link: 'http://wiki.heisea.cn/pages/viewpage.action?pageId=35319180',
       },
       // {
       //   text: '阿里开发者中心',

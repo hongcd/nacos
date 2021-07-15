@@ -198,7 +198,7 @@ CREATE TABLE users (
 	username varchar(50) NOT NULL PRIMARY KEY,
 	password varchar(500) NOT NULL,
 	enabled boolean NOT NULL,
-	`kps` varchar(128) NOT NULL DEFAULT ',1,' COMMENT 'kps'
+	`kps` varchar(128) NOT NULL DEFAULT '1' COMMENT 'kps，用逗号","分割'
 ) comment '用户表';
 
 CREATE TABLE roles (
@@ -214,6 +214,6 @@ CREATE TABLE permissions (
     constraint uk_role_permission UNIQUE (role,resource,action)
 );
 
-INSERT INTO users (username, password, enabled) VALUES ('nacos', '$2a$10$EuWPZHzz32dJN7jexM34MOeYirDdFAZm2kuWj7VEOJhhZkDrxfvUu', TRUE);
+INSERT INTO users (username, password, enabled, kps) VALUES ('nacos', '$2a$10$EuWPZHzz32dJN7jexM34MOeYirDdFAZm2kuWj7VEOJhhZkDrxfvUu', TRUE, '*');
 
 INSERT INTO roles (username, role) VALUES ('nacos', 'ROLE_ADMIN');

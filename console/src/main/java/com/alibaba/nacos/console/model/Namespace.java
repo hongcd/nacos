@@ -35,6 +35,8 @@ public class Namespace {
      * see {@link com.alibaba.nacos.console.enums.NamespaceTypeEnum}.
      */
     private int type;
+
+    private String kp;
     
     public String getNamespaceShowName() {
         return namespaceShowName;
@@ -60,12 +62,13 @@ public class Namespace {
         this.namespaceShowName = namespaceShowName;
     }
     
-    public Namespace(String namespace, String namespaceShowName, int quota, int configCount, int type) {
+    public Namespace(String namespace, String namespaceShowName, int quota, int configCount, int type, String kp) {
         this.namespace = namespace;
         this.namespaceShowName = namespaceShowName;
         this.quota = quota;
         this.configCount = configCount;
         this.type = type;
+        this.kp = kp;
     }
     
     public int getQuota() {
@@ -91,5 +94,12 @@ public class Namespace {
     public void setType(int type) {
         this.type = type;
     }
-    
+
+    public String getKp() {
+        return kp;
+    }
+
+    public void setKp(String kp) {
+        this.kp = kp;
+    }
 }

@@ -27,53 +27,37 @@ const formItemLayout = {
 };
 
 @ConfigProvider.config
-class NewUser extends React.Component {
-  static displayName = 'NewUser';
+class UpdateUser extends React.Component {
+  static displayName = 'UpdateUser';
 
   field = new Field(this);
 
   static propTypes = {
     locale: PropTypes.object,
     visible: PropTypes.bool,
-    onOk: PropTypes.func,
+    username: PropTypes.string,
     onCancel: PropTypes.func,
+    onOk: PropTypes.func,
   };
 
   check() {
     const { locale } = this.props;
     const errors = {
-      username: locale.usernameError,
-      password: locale.passwordError,
-      rePassword: locale.rePasswordError,
-      kps: locale.kpsPlaceholder,
+      kps: locale.kps,
     };
-    const vals = Object.keys(errors).map(key => {
-      const val = this.field.getValue(key);
-      if (!val && key !== 'kps') {
-        this.field.setError(key, errors[key]);
-      }
-      return val;
-    });
-    if (vals.filter(v => v).length !== 4) {
-      return null;
-    }
-    const [password, rePassword] = ['password', 'rePassword'].map(k => this.field.getValue(k));
-    if (password !== rePassword) {
-      this.field.setError('rePassword', locale.rePasswordError2);
-      return null;
-    }
-    return vals;
+    const vals = Object.keys(errors).map(key => this.field.getValue(key));
+    return [this.props.username, ...vals];
   }
 
   render() {
     const { locale } = this.props;
     const { getError } = this.field;
-    const { visible, onOk, onCancel } = this.props;
+    const { username, onOk, onCancel } = this.props;
     return (
       <>
         <Dialog
-          title={locale.createUser}
-          visible={visible}
+          title={locale.updateUser}
+          visible={username}
           onOk={() => {
             const vals = this.check();
             if (vals) {
@@ -85,21 +69,11 @@ class NewUser extends React.Component {
           afterClose={() => this.field.reset()}
         >
           <Form style={{ width: 400 }} {...formItemLayout} field={this.field}>
-            <FormItem label={locale.username} required help={getError('username')}>
-              <Input name="username" trim placeholder={locale.usernamePlaceholder} />
+            <FormItem label={locale.username} required>
+              <p>{username}</p>
             </FormItem>
             <FormItem label={locale.kps} help={getError('kps')}>
               <Input name="kps" trim placeholder={locale.kpsPlaceholder} />
-            </FormItem>
-            <FormItem label={locale.password} required help={getError('password')}>
-              <Input name="password" htmlType="password" placeholder={locale.passwordPlaceholder} />
-            </FormItem>
-            <FormItem label={locale.rePassword} required help={getError('rePassword')}>
-              <Input
-                name="rePassword"
-                htmlType="password"
-                placeholder={locale.rePasswordPlaceholder}
-              />
             </FormItem>
           </Form>
         </Dialog>
@@ -108,4 +82,4 @@ class NewUser extends React.Component {
   }
 }
 
-export default NewUser;
+export default UpdateUser;

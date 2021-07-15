@@ -32,6 +32,8 @@ public class TenantInfo implements Serializable {
     private String tenantName;
     
     private String tenantDesc;
+
+    private String kp;
     
     public String getTenantId() {
         return tenantId;
@@ -56,5 +58,12 @@ public class TenantInfo implements Serializable {
     public void setTenantDesc(String tenantDesc) {
         this.tenantDesc = tenantDesc;
     }
-    
+
+    public String getKp() {
+        return kp;
+    }
+
+    public void setKp(String kp) {
+        this.kp = kp;
+    }
 }

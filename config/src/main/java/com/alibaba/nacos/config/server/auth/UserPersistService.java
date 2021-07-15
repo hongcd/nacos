@@ -63,6 +63,13 @@ public interface UserPersistService {
     void updateUserPassword(String username, String password);
 
     /**
+     * update user.
+     * @param username username
+     * @param kps kps
+     */
+    void updateKps(String username, String kps);
+
+    /**
      * query user by username.
      *
      * @param username username

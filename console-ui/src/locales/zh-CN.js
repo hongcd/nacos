@@ -20,6 +20,7 @@ const I18N_CONF = {
     docs: '文档',
     blog: '博客',
     community: '社区',
+    mtcWiki: '医药wiki',
     languageSwitchButton: 'En',
     logout: '登出',
     changePassword: '修改密码',
@@ -553,9 +554,11 @@ const I18N_CONF = {
   NewUser: {
     createUser: '创建用户',
     username: '用户名',
+    kps: 'kps',
     password: '密码',
     rePassword: '确认密码',
     usernamePlaceholder: '请输入用户名',
+    kpsPlaceholder: '请输入kps',
     passwordPlaceholder: '请输入密码',
     rePasswordPlaceholder: '请输入确认密码',
     usernameError: '用户名不能为空！',
@@ -573,6 +576,12 @@ const I18N_CONF = {
     rePasswordPlaceholder: '请输入确认密码',
     rePasswordError: '确认密码不能为空!',
     rePasswordError2: '两次输入密码不一致!',
+  },
+  UpdateUser: {
+    updateUser: '修改用户',
+    username: '用户名',
+    kps: 'kps',
+    kpsPlaceholder: '请输入kps',
   },
   RolesManagement: {
     roleManagement: '角色管理',
