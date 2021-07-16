@@ -109,9 +109,9 @@ class NameSpace extends React.Component {
   detailNamespace(record) {
     const { locale = {} } = this.props;
     const { namespaceDetails, namespaceName, namespaceID, configuration, description } = locale;
-    const { namespace } = record; // 获取ak,sk
+    const { namespace, kp } = record; // 获取ak,sk
     request({
-      url: `v1/console/namespaces?show=all&namespaceId=${namespace}`,
+      url: `v1/console/namespaces?show=all&namespaceId=${namespace}&kp=${kp}`,
       beforeSend: () => {
         this.openLoading();
       },
@@ -182,7 +182,7 @@ class NameSpace extends React.Component {
         </div>
       ),
       onOk: () => {
-        const url = `v1/console/namespaces?namespaceId=${record.namespace}`;
+        const url = `v1/console/namespaces?namespaceId=${record.namespace}&kp=${record.kp}`;
         request({
           url,
           type: 'delete',
@@ -259,6 +259,10 @@ class NameSpace extends React.Component {
         </span>
       );
     }
+    if (!this.isAdminUser()) {
+      _delinfo = <span>&nbsp;</span>;
+      _editinfo = <span>&nbsp;</span>;
+    }
     return (
       <div>
         {_detailinfo}
@@ -280,6 +284,11 @@ class NameSpace extends React.Component {
       name = namespacePublic;
     }
     return <div>{name}</div>;
+  }
+
+  isAdminUser() {
+    const { username = '' } = JSON.parse(localStorage.token || '{}');
+    return username === 'nacos';
   }
 
   render() {
@@ -310,6 +319,7 @@ class NameSpace extends React.Component {
                   type="primary"
                   style={{ marginRight: 20, marginTop: 10 }}
                   onClick={this.addNameSpace.bind(this)}
+                  disabled={!this.isAdminUser()}
                 >
                   {namespaceAdd}
                 </Button>

@@ -72,7 +72,7 @@ class EditorNameSpace extends React.Component {
     this.field.setValues(record);
     request({
       type: 'get',
-      url: `v1/console/namespaces?show=all&namespaceId=${record.namespace}`,
+      url: `v1/console/namespaces?show=all&namespaceId=${record.namespace}&kp=${record.kp}`,
       success: res => {
         if (res !== null) {
           this.field.setValue('namespaceDesc', res.namespaceDesc);
@@ -107,6 +107,7 @@ class EditorNameSpace extends React.Component {
           namespace: values.namespace,
           namespaceShowName: values.namespaceShowName,
           namespaceDesc: values.namespaceDesc,
+          kp: values.kp,
         },
         success: res => {
           if (res === true) {
@@ -191,6 +192,17 @@ class EditorNameSpace extends React.Component {
                     ],
                   })}
                   disabled={this.state.type === 0}
+                />
+              </FormItem>
+              <FormItem label={locale.kp} required {...formItemLayout}>
+                <Input
+                  {...this.field.init('kp', {
+                    rules: [
+                      { required: true, message: locale.kpDesc },
+                      { validator: this.validateChart.bind(this) },
+                    ],
+                  })}
+                  disabled
                 />
               </FormItem>
               <FormItem label={locale.description} required {...formItemLayout}>

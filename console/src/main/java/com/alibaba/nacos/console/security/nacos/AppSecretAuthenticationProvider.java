@@ -18,6 +18,7 @@ package com.alibaba.nacos.console.security.nacos;
 
 import com.alibaba.nacos.config.server.remote.ConfigQueryRequestHandler;
 import com.alibaba.nacos.console.security.nacos.users.NacosUserDetailsServiceImpl;
+import com.alibaba.nacos.core.auth.AppAuthConfigSelector;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -37,10 +38,14 @@ public class AppSecretAuthenticationProvider implements AuthenticationProvider {
 
     private final ConfigQueryRequestHandler configQueryRequestHandler;
 
+    private final AppAuthConfigSelector appAuthConfigSelector;
+
     public AppSecretAuthenticationProvider(NacosUserDetailsServiceImpl userDetailsService,
-                                           ConfigQueryRequestHandler configQueryRequestHandler) {
+                                           ConfigQueryRequestHandler configQueryRequestHandler,
+                                           AppAuthConfigSelector appAuthConfigSelector) {
         this.userDetailsService = userDetailsService;
         this.configQueryRequestHandler = configQueryRequestHandler;
+        this.appAuthConfigSelector = appAuthConfigSelector;
     }
 
     @Override

@@ -439,6 +439,8 @@ const I18N_CONF = {
     namespace: 'Namespace cannot be empty',
     namespaceDesc: 'Namespace description cannot be empty',
     description: 'Description:',
+    kp: 'kp',
+    kpDesc: 'kp cannot be empty, default set 1',
   },
   ExportDialog: {
     selectedEntry: '| Selected Entry',
@@ -499,6 +501,8 @@ const I18N_CONF = {
     namespaceIdAlreadyExist: 'namespaceId already exist',
     newnamespceFailedMessage:
       'namespaceId format is incorrect/namespaceId length greater than 128/namespaceId already exist',
+    kp: 'kp',
+    kpDesc: 'kp cannot be empty, default set 1',
   },
   NameSpaceList: {
     notice: 'Notice',

@@ -436,6 +436,8 @@ const I18N_CONF = {
     namespace: '命名空间不能为空',
     namespaceDesc: '命名空间描述不能为空',
     description: '描述：',
+    kp: 'kp',
+    kpDesc: 'kp不能为空，默认情况都设置为1',
   },
   ExportDialog: {
     selectedEntry: '| 选中的条目',
@@ -495,6 +497,8 @@ const I18N_CONF = {
     description: '描述：',
     namespaceIdAlreadyExist: 'namespaceId已存在',
     newnamespceFailedMessage: 'namespaceId格式不正确/namespaceId长度大于128/namespaceId已存在',
+    kp: 'kp',
+    kpDesc: 'kp不能为空，默认情况都设置为1',
   },
   NameSpaceList: {
     notice: '提示',

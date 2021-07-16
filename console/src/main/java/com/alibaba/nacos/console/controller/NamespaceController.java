@@ -109,7 +109,7 @@ public class NamespaceController {
             return DEFAULT_KP;
         } else if (!DEFAULT_KP.equals(kp)) {
             User user = RequestUtil.getUser();
-            if (!Constants.DEFAULT_ADMIN_USER_NAME.equals(user.getUserName())) {
+            if (user != null && !Constants.DEFAULT_ADMIN_USER_NAME.equals(user.getUserName())) {
                 throw new IllegalArgumentException("invalid kp: " + kp);
             }
         }

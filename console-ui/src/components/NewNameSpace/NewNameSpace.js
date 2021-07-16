@@ -144,6 +144,7 @@ class NewNameSpace extends React.Component {
                 customNamespaceId,
                 namespaceName: values.namespaceShowName,
                 namespaceDesc: values.namespaceDesc,
+                kp: values.kp,
               },
               success: res => {
                 this.disabled = false;
@@ -270,6 +271,17 @@ class NewNameSpace extends React.Component {
                     ],
                   })}
                   style={{ width: '100%' }}
+                />
+              </FormItem>
+              <FormItem label={locale.kp} required {...formItemLayout}>
+                <Input
+                  {...this.field.init('kp', {
+                    rules: [
+                      { required: true, message: locale.kpDesc },
+                      { validator: this.validateChart.bind(this) },
+                    ],
+                  })}
+                  disabled={this.state.type === 0}
                 />
               </FormItem>
               <FormItem label={locale.description} required {...formItemLayout}>
