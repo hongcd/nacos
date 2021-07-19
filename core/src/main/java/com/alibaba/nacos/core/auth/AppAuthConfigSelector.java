@@ -1,6 +1,6 @@
 package com.alibaba.nacos.core.auth;
 
-import java.util.List;
+import com.alibaba.nacos.api.exception.NacosException;
 
 /**
  * application auth config selector.
@@ -12,6 +12,7 @@ public interface AppAuthConfigSelector {
      * select auto configuration.
      * @param appId appId
      * @return {@link AppAuthConfig} List
+     * @throws NacosException nacosException
      */
-    AppAuthConfig select(String appId);
+    AppAuthConfig select(String appId) throws NacosException;
 }

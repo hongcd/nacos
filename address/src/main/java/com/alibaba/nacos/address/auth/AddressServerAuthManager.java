@@ -41,7 +41,17 @@ public class AddressServerAuthManager implements AuthManager {
     public User loginRemote(Object request) throws AccessException {
         return null;
     }
-    
+
+    @Override
+    public User unionLogin(Object request) throws AccessException {
+        return null;
+    }
+
+    @Override
+    public User loginHmac(Object request) throws AccessException {
+        return null;
+    }
+
     @Override
     public void auth(Permission permission, User user) throws AccessException {
     }

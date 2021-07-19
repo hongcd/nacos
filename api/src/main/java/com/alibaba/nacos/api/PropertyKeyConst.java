@@ -72,6 +72,8 @@ public class PropertyKeyConst {
     public static final String NAMING_PUSH_EMPTY_PROTECTION = "namingPushEmptyProtection";
     
     public static final String PUSH_RECEIVER_UDP_PORT = "push.receiver.udp.port";
+
+    public static final String AUTH_TYPE = "authType";
     
     /**
      * Get the key value of some variable value from the system property.

@@ -16,9 +16,14 @@
 
 package com.alibaba.nacos.console.security.nacos;
 
+import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.config.server.remote.ConfigQueryRequestHandler;
+import com.alibaba.nacos.config.server.utils.LogUtil;
 import com.alibaba.nacos.console.security.nacos.users.NacosUserDetailsServiceImpl;
+import com.alibaba.nacos.core.auth.AppAuthConfig;
 import com.alibaba.nacos.core.auth.AppAuthConfigSelector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -50,6 +55,18 @@ public class AppSecretAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        String appId = (String) authentication.getPrincipal();
+        AppAuthConfig appAuthConfig;
+        try {
+            appAuthConfig = appAuthConfigSelector.select(appId);
+        } catch (NacosException e) {
+            LogUtil.DEFAULT_LOG.error("[authenticate] failure select app auth config, errorMsg: " + e.getMessage(), e);
+            return null;
+        }
+        if (appAuthConfig == null) {
+            return null;
+        }
+
         return null;
     }
 

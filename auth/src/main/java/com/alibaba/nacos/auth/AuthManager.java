@@ -46,6 +46,22 @@ public interface AuthManager {
      * @throws AccessException if authentication is failed
      */
     User loginRemote(Object request) throws AccessException;
+
+    /**
+     * union login.
+     * @param request HttpServletRequest/Request
+     * @return user.
+     * @throws AccessException if authentication is failed
+     */
+    User unionLogin(Object request) throws AccessException;
+
+    /**
+     * hmac(ak/sk) login.
+     * @param request HttpServletRequest/Request
+     * @return user.
+     * @throws AccessException if authentication is failed
+     */
+    User loginHmac(Object request) throws AccessException;
     
     /**
      * Authorization of request, constituted with resource and user.

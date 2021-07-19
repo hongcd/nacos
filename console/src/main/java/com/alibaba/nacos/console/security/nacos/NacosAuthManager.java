@@ -134,7 +134,18 @@ public class NacosAuthManager implements AuthManager {
         }
         return user;
     }
-    
+
+    @Override
+    public User unionLogin(Object request) throws AccessException {
+
+        return null;
+    }
+
+    @Override
+    public User loginHmac(Object request) throws AccessException {
+        return null;
+    }
+
     @Override
     public void auth(Permission permission, User user) throws AccessException {
         if (Loggers.AUTH.isDebugEnabled()) {
@@ -144,6 +155,22 @@ public class NacosAuthManager implements AuthManager {
         if (!roleService.hasPermission(user.getUserName(), permission)) {
             throw new AccessException("authorization failed!");
         }
+    }
+
+    /**
+     * get header from request.
+     * @param request request, HttpServletRequest/Request
+     * @param headerName header name
+     * @return header value
+     * @throws IllegalStateException request is not HttpServletRequest or Request
+     */
+    private String getRequestHeader(Object request, String headerName) {
+        if (request instanceof HttpServletRequest) {
+            return ((HttpServletRequest) request).getHeader(headerName);
+        } else if (request instanceof Request) {
+            return ((Request) request).getHeader(headerName);
+        }
+        throw new IllegalStateException("illegal request type, request: " + request);
     }
     
     /**

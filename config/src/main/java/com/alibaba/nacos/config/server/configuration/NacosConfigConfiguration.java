@@ -18,6 +18,10 @@ package com.alibaba.nacos.config.server.configuration;
 
 import com.alibaba.nacos.config.server.filter.NacosWebFilter;
 import com.alibaba.nacos.config.server.filter.CurcuitFilter;
+import com.alibaba.nacos.config.server.service.NacosAuthNamespaceCreateRunner;
+import com.alibaba.nacos.config.server.service.repository.PersistService;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
@@ -63,5 +67,10 @@ public class NacosConfigConfiguration {
     public CurcuitFilter transferToLeader() {
         return new CurcuitFilter();
     }
-    
+
+    @Bean
+    @ConditionalOnProperty(name = "mtc.nacos.core.auth.namespace.id")
+    public ApplicationRunner nacosAuthNamespaceCreateRunner(PersistService persistService) {
+        return new NacosAuthNamespaceCreateRunner(persistService);
+    }
 }
