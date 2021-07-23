@@ -28,7 +28,9 @@ import com.alibaba.nacos.sys.env.Constants;
 import com.alibaba.nacos.core.utils.Loggers;
 import com.alibaba.nacos.core.utils.WebUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -58,6 +60,9 @@ public class AuthFilter implements Filter {
     
     @Autowired
     private ControllerMethodsCache methodsCache;
+
+    @Autowired
+    private ApplicationContext applicationContext;
     
     private Map<Class<? extends ResourceParser>, ResourceParser> parserInstance = new ConcurrentHashMap<>();
     
@@ -115,8 +120,13 @@ public class AuthFilter implements Filter {
                 String resource = secured.resource();
                 
                 if (StringUtils.isBlank(resource)) {
-                    ResourceParser parser = getResourceParser(secured.parser());
-                    resource = parser.parseName(req);
+                    ResourceParser parser;
+                    try {
+                        parser = applicationContext.getBean(secured.parser());
+                    } catch (NoSuchBeanDefinitionException e) {
+                        parser = secured.parser().newInstance();
+                    }
+                    resource = parser.parseName(request);
                 }
                 
                 if (StringUtils.isBlank(resource)) {
@@ -124,7 +134,7 @@ public class AuthFilter implements Filter {
                     throw new AccessException("resource name invalid!");
                 }
                 
-                authManager.auth(new Permission(resource, action), authManager.login(req));
+                authManager.auth(new Permission(resource, action), authManager.unionLogin(req));
                 
             }
             chain.doFilter(request, response);

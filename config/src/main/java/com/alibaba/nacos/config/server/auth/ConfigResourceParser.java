@@ -17,15 +17,35 @@
 package com.alibaba.nacos.config.server.auth;
 
 import com.alibaba.nacos.api.config.remote.request.ConfigBatchListenRequest;
+import com.alibaba.nacos.api.config.remote.request.ConfigQueryRequest;
+import com.alibaba.nacos.api.config.remote.response.ConfigQueryResponse;
+import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.remote.request.Request;
+import com.alibaba.nacos.api.remote.request.RequestMeta;
+import com.alibaba.nacos.api.utils.NetUtils;
 import com.alibaba.nacos.auth.model.Resource;
 import com.alibaba.nacos.auth.parser.ResourceParser;
 import com.alibaba.nacos.common.utils.ReflectUtils;
 import com.alibaba.nacos.common.utils.NamespaceUtil;
+import com.alibaba.nacos.config.server.model.ConfigKey;
+import com.alibaba.nacos.config.server.remote.ConfigQueryRequestHandler;
+import com.alibaba.nacos.config.server.service.repository.PersistService;
+import com.alibaba.nacos.core.utils.Loggers;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static com.alibaba.nacos.api.common.Constants.ALL_PATTERN;
 
 /**
  * Config resource parser.
@@ -33,10 +53,40 @@ import java.util.List;
  * @author nkorange
  * @since 1.2.0
  */
+@Component
 public class ConfigResourceParser implements ResourceParser {
     
     private static final String AUTH_CONFIG_PREFIX = "config/";
-    
+
+    @Autowired
+    private PersistService persistService;
+
+    private Cache<Triple<String, String, String>, String> dataAppNameCache;
+
+    @PostConstruct
+    private void init() {
+        dataAppNameCache = CacheBuilder.newBuilder()
+                .concurrencyLevel(Runtime.getRuntime().availableProcessors())
+                .initialCapacity(10)
+                .maximumSize(100)
+                .expireAfterWrite(60, TimeUnit.SECONDS)
+                .build(new CacheLoader<Triple<String, String, String>, String>() {
+                    @Override
+                    public String load(Triple<String, String, String> triple) {
+                        try {
+                            ConfigKey configKey = persistService.findConfigKey(triple.getLeft(), triple.getMiddle(), triple.getRight());
+                            if (configKey == null) {
+                                return ALL_PATTERN;
+                            }
+                            return configKey.getAppName();
+                        } catch (Exception e) {
+                            Loggers.AUTH.error("[init] query data from config center, config: " + triple + ", msg: " + e.getMessage(), e);
+                            throw new InvalidCacheLoadException(e.getMessage());
+                        }
+                    }
+                });
+    }
+
     @Override
     public String parseName(Object requestObj) {
         
@@ -75,7 +125,8 @@ public class ConfigResourceParser implements ResourceParser {
         } else {
             sb.append(Resource.SPLITTER).append(groupName);
         }
-        
+
+
         if (StringUtils.isBlank(dataId)) {
             sb.append(Resource.SPLITTER).append(AUTH_CONFIG_PREFIX).append("*");
         } else {

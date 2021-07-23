@@ -16,11 +16,20 @@
 
 package com.alibaba.nacos.client.utils;
 
+import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.common.Constants;
+import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.client.identify.IdentifyConstants;
+import com.alibaba.nacos.common.utils.StringUtils;
 import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+
+import static com.alibaba.nacos.api.common.Constants.APPNAME;
+import static com.alibaba.nacos.api.exception.NacosException.CLIENT_INVALID_PARAM;
 
 /**
  * env util.
@@ -74,6 +83,43 @@ public class EnvUtil {
                 }
             }
         }
+    }
+
+    /**
+     * init env and set properties.
+     * @param properties properties
+     * @throws NacosException missing mtc.properties
+     */
+    public static void initSystemAndPropertiesEnv(Properties properties) throws NacosException {
+        Properties mtcProps = new Properties();
+        try {
+            mtcProps.load(EnvUtil.class.getClassLoader().getResourceAsStream("mtc.properties"));
+        } catch (IOException e) {
+            LOGGER.error("[initSystemProperties] failure load mtc.properties, please check, msg: " + e.getMessage(), e);
+            throw new NacosException(CLIENT_INVALID_PARAM, e.getMessage(), e);
+        }
+        String appName = mtcProps.getProperty("app.name");
+        if (StringUtils.isNotBlank(appName)) {
+            System.setProperty(IdentifyConstants.PROJECT_NAME_PROPERTY, appName);
+            properties.setProperty(APPNAME, appName);
+        }
+        String env = mtcProps.getProperty("env");
+        if (StringUtils.isNotBlank(appName)) {
+            System.setProperty("env", env);
+            properties.setProperty("env", env);
+        }
+        String accessKey = mtcProps.getProperty("access-key");
+        if (StringUtils.isNotBlank(accessKey)) {
+            properties.setProperty(PropertyKeyConst.ACCESS_KEY, accessKey);
+        }
+        String secretKey = mtcProps.getProperty("secret-key");
+        if (StringUtils.isNotBlank(secretKey)) {
+            properties.setProperty(PropertyKeyConst.SECRET_KEY, secretKey);
+        }
+    }
+
+    public static String getEnv() {
+        return System.getProperty("env");
     }
     
     public static String getSelfAmorayTag() {

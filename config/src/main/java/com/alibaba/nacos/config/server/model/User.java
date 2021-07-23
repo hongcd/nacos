@@ -17,6 +17,7 @@
 package com.alibaba.nacos.config.server.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * User.
@@ -32,6 +33,8 @@ public class User implements Serializable {
     private String password;
 
     private String kps;
+
+    private List<AppPermission> appPermissions;
     
     public String getPassword() {
         return password;
@@ -55,5 +58,13 @@ public class User implements Serializable {
 
     public void setKps(String kps) {
         this.kps = kps;
+    }
+
+    public List<AppPermission> getAppPermissions() {
+        return appPermissions;
+    }
+
+    public void setAppPermissions(List<AppPermission> appPermissions) {
+        this.appPermissions = appPermissions;
     }
 }

@@ -27,7 +27,15 @@ import java.io.Serializable;
 public class PermissionInfo implements Serializable {
     
     private static final long serialVersionUID = 388813573388837395L;
-    
+
+    public PermissionInfo() {}
+
+    public PermissionInfo(String role, String resource, String action) {
+        this.role = role;
+        this.resource = resource;
+        this.action = action;
+    }
+
     /**
      * Role name.
      */

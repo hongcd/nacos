@@ -128,7 +128,7 @@ public class NamespaceController {
         // TODO 获取用kp
         Namespace namespace0 = new Namespace("", DEFAULT_NAMESPACE, DEFAULT_QUOTA, persistService.configInfoCount(DEFAULT_TENANT),
                 NamespaceTypeEnum.GLOBAL.getType(), DEFAULT_KP);
-        User user = authManager.login(request);
+        User user = authManager.unionLogin(request);
         String userName = user.getUserName();
 
         // TODO 这里应该查看用户拥有的kps

@@ -325,7 +325,7 @@ public final class RowMapperManager {
             info.setDataId(rs.getString("data_id"));
             info.setGroup(rs.getString("group_id"));
             info.setAppName(rs.getString("app_name"));
-            
+            info.setTenant(rs.getString("tenant_id"));
             return info;
         }
     }

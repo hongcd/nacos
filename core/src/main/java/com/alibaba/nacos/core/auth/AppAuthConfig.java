@@ -1,5 +1,6 @@
 package com.alibaba.nacos.core.auth;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -8,13 +9,17 @@ import java.util.Map;
  * @author candong.hong
  * @since 2021-7-16
  */
-public class AppAuthConfig {
+public class AppAuthConfig implements Serializable {
+
+    private static final long serialVersionUID = -1980470523283845523L;
 
     private String appName;
 
     private String desc;
 
     private String pm;
+
+    private List<AppPermission> appPermissions;
 
     private List<Permission> defaultPermissions;
 
@@ -44,6 +49,14 @@ public class AppAuthConfig {
         this.pm = pm;
     }
 
+    public List<AppPermission> getAppPermissions() {
+        return appPermissions;
+    }
+
+    public void setAppPermissions(List<AppPermission> appPermissions) {
+        this.appPermissions = appPermissions;
+    }
+
     public List<Permission> getDefaultPermissions() {
         return defaultPermissions;
     }
@@ -60,7 +73,35 @@ public class AppAuthConfig {
         this.envs = envs;
     }
 
-    static class Permission extends com.alibaba.nacos.auth.model.Permission {
+    public static class AppPermission implements Serializable {
+
+        private static final long serialVersionUID = -8023159901078225478L;
+
+        private String appName;
+
+        private String action;
+
+        public String getAppName() {
+            return appName;
+        }
+
+        public void setAppName(String appName) {
+            this.appName = appName;
+        }
+
+        public String getAction() {
+            return action;
+        }
+
+        public void setAction(String action) {
+            this.action = action;
+        }
+    }
+
+
+    public static class Permission extends com.alibaba.nacos.auth.model.Permission {
+
+        private static final long serialVersionUID = -3682153401364313564L;
 
         private String id;
 
@@ -73,7 +114,9 @@ public class AppAuthConfig {
         }
     }
 
-    static class Env {
+    public static class Env implements Serializable {
+
+        private static final long serialVersionUID = 1693493542087638565L;
 
         private String accessKey;
 

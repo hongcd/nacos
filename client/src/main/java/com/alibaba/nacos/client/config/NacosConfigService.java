@@ -32,6 +32,7 @@ import com.alibaba.nacos.client.config.impl.LocalEncryptedDataKeyProcessor;
 import com.alibaba.nacos.client.config.impl.ServerListManager;
 import com.alibaba.nacos.client.config.utils.ContentUtils;
 import com.alibaba.nacos.client.config.utils.ParamUtils;
+import com.alibaba.nacos.client.utils.EnvUtil;
 import com.alibaba.nacos.client.utils.LogUtils;
 import com.alibaba.nacos.client.utils.ParamUtil;
 import com.alibaba.nacos.client.utils.ValidatorUtils;
@@ -71,6 +72,7 @@ public class NacosConfigService implements ConfigService {
     private final ConfigFilterChainManager configFilterChainManager;
     
     public NacosConfigService(Properties properties) throws NacosException {
+        EnvUtil.initSystemAndPropertiesEnv(properties);
         ValidatorUtils.checkInitParam(properties);
         
         initNamespace(properties);
@@ -83,7 +85,7 @@ public class NacosConfigService implements ConfigService {
         agent = new ServerHttpAgent(serverListManager);
         
     }
-    
+
     private void initNamespace(Properties properties) {
         namespace = ParamUtil.parseNamespace(properties);
         properties.put(PropertyKeyConst.NAMESPACE, namespace);

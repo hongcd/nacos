@@ -30,7 +30,10 @@ import com.alibaba.nacos.common.utils.ExceptionUtil;
 import com.alibaba.nacos.core.remote.AbstractRequestFilter;
 import com.alibaba.nacos.core.utils.Loggers;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
@@ -49,6 +52,9 @@ public class RemoteRequestAuthFilter extends AbstractRequestFilter {
     
     @Autowired
     private AuthManager authManager;
+
+    @Autowired
+    private ApplicationContext applicationContext;
     
     @Override
     public Response filter(Request request, RequestMeta meta, Class handlerClazz) throws NacosException {
@@ -67,7 +73,12 @@ public class RemoteRequestAuthFilter extends AbstractRequestFilter {
                 String resource = secured.resource();
                 
                 if (StringUtils.isBlank(resource)) {
-                    ResourceParser parser = secured.parser().newInstance();
+                    ResourceParser parser;
+                    try {
+                        parser = applicationContext.getBean(secured.parser());
+                    } catch (NoSuchBeanDefinitionException e) {
+                        parser = secured.parser().newInstance();
+                    }
                     resource = parser.parseName(request);
                 }
                 
@@ -76,7 +87,7 @@ public class RemoteRequestAuthFilter extends AbstractRequestFilter {
                     throw new AccessException("resource name invalid!");
                 }
                 
-                authManager.auth(new Permission(resource, action), authManager.loginRemote(request));
+                authManager.auth(new Permission(resource, action), authManager.unionLogin(request));
                 
             }
         } catch (AccessException e) {

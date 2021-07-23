@@ -16,6 +16,7 @@
 
 package com.alibaba.nacos.console.security.nacos.roles;
 
+import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.auth.common.AuthConfigs;
 import com.alibaba.nacos.auth.model.Permission;
 import com.alibaba.nacos.auth.model.User;
@@ -27,24 +28,23 @@ import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.utils.RequestUtil;
 import com.alibaba.nacos.console.security.nacos.NacosAuthConfig;
 import com.alibaba.nacos.console.security.nacos.users.NacosUserDetailsServiceImpl;
+import com.alibaba.nacos.core.auth.AppAuthConfig;
+import com.alibaba.nacos.core.auth.AppAuthConfigSelector;
 import com.alibaba.nacos.core.utils.Loggers;
+import com.google.common.collect.Lists;
 import io.jsonwebtoken.lang.Collections;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.mina.util.ConcurrentHashSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import static com.alibaba.nacos.api.common.Constants.COLON;
 import static com.alibaba.nacos.config.server.constant.Constants.DEFAULT_ADMIN_USER_NAME;
 
 /**
@@ -71,23 +71,65 @@ public class NacosRoleServiceImpl {
     
     @Autowired
     private PermissionPersistService permissionPersistService;
+
+    @Autowired
+    private AppAuthConfigSelector appAuthConfigSelector;
     
     private volatile Set<String> roleSet = new ConcurrentHashSet<>();
     
     private volatile Map<String, List<RoleInfo>> roleInfoMap = new ConcurrentHashMap<>();
     
     private volatile Map<String, List<PermissionInfo>> permissionInfoMap = new ConcurrentHashMap<>();
+
+    private void reloadFromAppAuthConfig(Set<String> roleSet, Map<String, List<RoleInfo>> roleInfoMap,
+                                         Map<String, List<PermissionInfo>> permissionInfoMap) throws NacosException {
+        List<AppAuthConfig> appAuthConfigs = appAuthConfigSelector.selectAll();
+        for (AppAuthConfig appAuthConfig : appAuthConfigs) {
+            String appName = appAuthConfig.getAppName();
+            List<AppAuthConfig.Permission> defaultPermissions = appAuthConfig.getDefaultPermissions();
+
+            appAuthConfig.getEnvs().forEach((envName, env) -> {
+                List<AppAuthConfig.Permission> envPermissions = env.getPermissions();
+                if (env.isExtendsDefaultPermissions()) {
+                    Set<String> envPermissionIds = envPermissions.stream()
+                            .map(AppAuthConfig.Permission::getId)
+                            .collect(Collectors.toSet());
+                    defaultPermissions.stream()
+                            .filter(permission -> !envPermissionIds.contains(permission.getId()))
+                            .forEach(envPermissions::add);
+                }
+                RoleInfo roleInfo = new RoleInfo();
+                // like api-gateway:test
+                roleInfo.setUsername(appName + COLON + envName);
+                roleInfo.setRole("APP_ROLE" + COLON + roleInfo.getUsername());
+                roleSet.add(roleInfo.getRole());
+                roleInfoMap.put(roleInfo.getUsername(), Lists.newArrayList(roleInfo));
+
+                List<PermissionInfo> rolePermissions = envPermissions.stream()
+                        .map(p -> new PermissionInfo(roleInfo.getRole(), p.getResource(), p.getAction()))
+                        .collect(Collectors.toList());
+                permissionInfoMap.put(roleInfo.getRole(), rolePermissions);
+            });
+        }
+    }
     
     @Scheduled(initialDelay = 5000, fixedDelay = 15000)
     private void reload() {
+        Set<String> tmpRoleSet = new HashSet<>(16);
+        Map<String, List<RoleInfo>> tmpRoleInfoMap = new ConcurrentHashMap<>(16);
+        Map<String, List<PermissionInfo>> tmpPermissionInfoMap = new ConcurrentHashMap<>(16);
         try {
+            reloadFromAppAuthConfig(tmpRoleSet, tmpRoleInfoMap, tmpPermissionInfoMap);
             Page<RoleInfo> roleInfoPage = rolePersistService
                     .getRolesByUserName(StringUtils.EMPTY, DEFAULT_PAGE_NO, Integer.MAX_VALUE);
             if (roleInfoPage == null) {
+                if (!tmpRoleSet.isEmpty() && !tmpRoleInfoMap.isEmpty() && !tmpPermissionInfoMap.isEmpty()) {
+                    roleSet = tmpRoleSet;
+                    roleInfoMap = tmpRoleInfoMap;
+                    permissionInfoMap = tmpPermissionInfoMap;
+                }
                 return;
             }
-            Set<String> tmpRoleSet = new HashSet<>(16);
-            Map<String, List<RoleInfo>> tmpRoleInfoMap = new ConcurrentHashMap<>(16);
             for (RoleInfo roleInfo : roleInfoPage.getPageItems()) {
                 if (!tmpRoleInfoMap.containsKey(roleInfo.getUsername())) {
                     tmpRoleInfoMap.put(roleInfo.getUsername(), new ArrayList<>());
@@ -95,12 +137,13 @@ public class NacosRoleServiceImpl {
                 tmpRoleInfoMap.get(roleInfo.getUsername()).add(roleInfo);
                 tmpRoleSet.add(roleInfo.getRole());
             }
-            
-            Map<String, List<PermissionInfo>> tmpPermissionInfoMap = new ConcurrentHashMap<>(16);
+
             for (String role : tmpRoleSet) {
                 Page<PermissionInfo> permissionInfoPage = permissionPersistService
                         .getPermissions(role, DEFAULT_PAGE_NO, Integer.MAX_VALUE);
-                tmpPermissionInfoMap.put(role, permissionInfoPage.getPageItems());
+                if (!tmpPermissionInfoMap.containsKey(role) || !permissionInfoPage.getPageItems().isEmpty()) {
+                    tmpPermissionInfoMap.put(role, permissionInfoPage.getPageItems());
+                }
             }
             
             roleSet = tmpRoleSet;

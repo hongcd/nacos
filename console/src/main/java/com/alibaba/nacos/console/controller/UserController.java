@@ -242,7 +242,7 @@ public class UserController {
         
         if (AuthSystemTypes.NACOS.name().equalsIgnoreCase(authConfigs.getNacosAuthSystemType()) || AuthSystemTypes.LDAP
                 .name().equalsIgnoreCase(authConfigs.getNacosAuthSystemType())) {
-            NacosUser user = (NacosUser) authManager.login(request);
+            NacosUser user = (NacosUser) authManager.unionLogin(request);
             
             response.addHeader(NacosAuthConfig.AUTHORIZATION_HEADER, NacosAuthConfig.TOKEN_PREFIX + user.getToken());
             

@@ -32,14 +32,17 @@ public class ConfigKey implements Serializable {
     private String dataId;
     
     private String group;
+
+    private String tenant;
     
     public ConfigKey() {
     }
     
-    public ConfigKey(String appName, String dataId, String group) {
+    public ConfigKey(String appName, String dataId, String group, String tenant) {
         this.appName = appName;
         this.dataId = dataId;
         this.group = group;
+        this.tenant = tenant;
     }
     
     public String getAppName() {
@@ -65,5 +68,12 @@ public class ConfigKey implements Serializable {
     public void setGroup(String group) {
         this.group = group;
     }
-    
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
+    }
 }

@@ -214,6 +214,15 @@ CREATE TABLE `permissions` (
     UNIQUE INDEX `uk_role_permission` (`role`,`resource`,`action`) USING BTREE
 );
 
+CREATE TABLE `users_app_permission` (
+    `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `username` VARCHAR(50) NOT NULL COMMENT '用户名',
+    `app` VARCHAR(50) NOT NULL COMMENT '应用',
+    `action` VARCHAR(8) NOT NULL COMMENT '动作,r: 读; w: 写; rw: 读写',
+    PRIMARY KEY `pk_id`(`id`),
+    UNIQUE KEY `uk_username_app`(`username`, `app`) USING BTREE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_bin COMMENT '用户应用权限表';
+
 INSERT INTO users (username, password, enabled, kps) VALUES ('nacos', '$2a$10$EuWPZHzz32dJN7jexM34MOeYirDdFAZm2kuWj7VEOJhhZkDrxfvUu', TRUE, '*');
 
 INSERT INTO roles (username, role) VALUES ('nacos', 'ROLE_ADMIN');

@@ -18,6 +18,8 @@ package com.alibaba.nacos.config.server.auth;
 
 import com.alibaba.nacos.config.server.model.Page;
 
+import java.util.List;
+
 /**
  * Permission CRUD service.
  *
@@ -54,4 +56,12 @@ public interface PermissionPersistService {
      * @param action action
      */
     void deletePermission(String role, String resource, String action);
+
+    /**
+     * get user app permissions.
+     *
+     * @param username username
+     * @return app permissions info
+     */
+    List<UserAppPermission> findUserAppPermissions(String username);
 }

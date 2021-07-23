@@ -904,7 +904,12 @@ public class EmbeddedStoragePersistServiceImpl implements PersistService {
         return databaseOperate.queryOne(sql, args, CONFIG_INFO_WRAPPER_ROW_MAPPER);
         
     }
-    
+
+    @Override
+    public ConfigKey findConfigKey(String dataId, String group, String tenant) {
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     public Page<ConfigInfo> findConfigInfoByDataId(final int pageNo, final int pageSize, final String dataId,
             final String tenant) {
@@ -1335,7 +1340,7 @@ public class EmbeddedStoragePersistServiceImpl implements PersistService {
     @Override
     public Page<ConfigKey> findAllConfigKey(final int pageNo, final int pageSize, final String tenant) {
         final String tenantTmp = StringUtils.isBlank(tenant) ? StringUtils.EMPTY : tenant;
-        final String select = " SELECT data_id,group_id,app_name FROM "
+        final String select = " SELECT data_id,group_id,app_name, tenant_id FROM "
                 + " ( SELECT id FROM config_info WHERE tenant_id LIKE ? ORDER BY id LIMIT ?, ? ) "
                 + "g, config_info t  WHERE g.id = t.id ";
         

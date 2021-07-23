@@ -524,6 +524,15 @@ public interface PersistService {
      * @return config info
      */
     ConfigInfoWrapper findConfigInfo(final String dataId, final String group, final String tenant);
+
+    /**
+     * Query key configuration information.
+     * @param dataId dataId
+     * @param group group
+     * @param tenant tenant
+     * @return config key
+     */
+    ConfigKey findConfigKey(final String dataId, final String group, final String tenant);
     
     /**
      * Query configuration information based on dataId.

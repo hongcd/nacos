@@ -52,6 +52,8 @@ public abstract class AbstractNamingClientProxy extends Subscriber<ServerListCha
     private static final String SEPARATOR = "@@";
     
     private final SecurityProxy securityProxy;
+
+    private static final String ACCESS_KEY_HEADER = "Spas-AccessKey";
     
     private final Properties properties;
     
@@ -91,6 +93,8 @@ public abstract class AbstractNamingClientProxy extends Subscriber<ServerListCha
                 result.put(SIGNATURE_FILED, signature);
                 result.put(DATA_FILED, signData);
                 result.put(AK_FILED, ak);
+                result.put(ACCESS_KEY_HEADER, ak);
+                result.putAll(SpasAdapter.getTotpSignHeaders(sk));
             } catch (Exception e) {
                 NAMING_LOGGER.error("inject ak/sk failed.", e);
             }

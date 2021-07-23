@@ -883,7 +883,20 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
             throw e;
         }
     }
-    
+
+    @Override
+    public ConfigKey findConfigKey(String dataId, String group, String tenant) {
+        String sql = "SELECT data_id, group_id, tenant_id, app_name FROM config_info WHERE data_id = ? and group_id = ? and tenant_id like ?";
+        try {
+            return this.jt.queryForObject(sql, new Object[]{dataId, group, tenant}, CONFIG_KEY_ROW_MAPPER);
+        } catch (EmptyResultDataAccessException e) { // Indicates that the data does not exist, returns null.
+            return null;
+        } catch (CannotGetJdbcConnectionException e) {
+            LogUtil.FATAL_LOG.error("[db-error] " + e.toString(), e);
+            throw e;
+        }
+    }
+
     @Override
     public Page<ConfigInfo> findConfigInfoByDataId(final int pageNo, final int pageSize, final String dataId,
             final String tenant) {
@@ -1352,7 +1365,7 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
     @Override
     public Page<ConfigKey> findAllConfigKey(final int pageNo, final int pageSize, final String tenant) {
         String tenantTmp = StringUtils.isBlank(tenant) ? StringUtils.EMPTY : tenant;
-        String select = " SELECT data_id,group_id,app_name  FROM ( "
+        String select = " SELECT data_id,group_id,app_name,tenant_id  FROM ( "
                 + " SELECT id FROM config_info WHERE tenant_id LIKE ? ORDER BY id LIMIT ?, ?  )"
                 + " g, config_info t WHERE g.id = t.id  ";
         

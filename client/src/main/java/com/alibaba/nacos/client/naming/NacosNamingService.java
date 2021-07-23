@@ -35,6 +35,7 @@ import com.alibaba.nacos.client.naming.remote.NamingClientProxyDelegate;
 import com.alibaba.nacos.client.naming.utils.CollectionUtils;
 import com.alibaba.nacos.client.naming.utils.InitUtils;
 import com.alibaba.nacos.client.naming.utils.UtilAndComs;
+import com.alibaba.nacos.client.utils.EnvUtil;
 import com.alibaba.nacos.client.utils.ValidatorUtils;
 import com.alibaba.nacos.common.notify.NotifyCenter;
 import com.alibaba.nacos.common.utils.StringUtils;
@@ -83,6 +84,7 @@ public class NacosNamingService implements NamingService {
     
     private void init(Properties properties) throws NacosException {
         ValidatorUtils.checkInitParam(properties);
+        EnvUtil.initSystemAndPropertiesEnv(properties);
         this.namespace = InitUtils.initNamespaceForNaming(properties);
         InitUtils.initSerialization();
         InitUtils.initWebRootContext(properties);
@@ -94,7 +96,7 @@ public class NacosNamingService implements NamingService {
         this.serviceInfoHolder = new ServiceInfoHolder(namespace, properties);
         this.clientProxy = new NamingClientProxyDelegate(this.namespace, serviceInfoHolder, properties, changeNotifier);
     }
-    
+
     private void initLogName(Properties properties) {
         logName = System.getProperty(UtilAndComs.NACOS_NAMING_LOG_NAME);
         if (StringUtils.isEmpty(logName)) {

@@ -18,14 +18,23 @@ package com.alibaba.nacos.client.config.impl;
 
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.client.identify.CredentialService;
+import com.alibaba.nacos.client.utils.AppNameUtils;
+import com.alibaba.nacos.client.utils.EnvUtil;
 import com.alibaba.nacos.common.codec.Base64;
 import com.alibaba.nacos.common.utils.StringUtils;
+import com.google.common.collect.Maps;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.alibaba.nacos.api.common.Constants.APPNAME;
+import static com.alibaba.nacos.api.common.Constants.SERVICE_INFO_SPLITER;
 
 /**
  * adapt spas interface.
@@ -35,7 +44,7 @@ import java.util.Map;
 public class SpasAdapter {
     
     private static final String TIMESTAMP_HEADER = "Timestamp";
-    
+
     private static final String SIGNATURE_HEADER = "Spas-Signature";
     
     private static final String GROUP_KEY = "group";
@@ -59,12 +68,12 @@ public class SpasAdapter {
         }
         return header;
     }
-    
+
     public static Map<String, String> getSignHeaders(String groupKey, String tenant, String secretKey) {
         if (StringUtils.isBlank(groupKey) && StringUtils.isBlank(tenant)) {
             return null;
         }
-        
+
         String resource = "";
         if (StringUtils.isNotBlank(groupKey) && StringUtils.isNotBlank(tenant)) {
             resource = tenant + "+" + groupKey;
@@ -75,12 +84,12 @@ public class SpasAdapter {
         }
         return getSignHeaders(resource, secretKey);
     }
-    
+
     public static Map<String, String> getSignHeaders(Map<String, String> paramValues, String secretKey) {
         if (null == paramValues) {
             return null;
         }
-        
+
         String resource = "";
         if (paramValues.containsKey(TENANT_KEY) && paramValues.containsKey(GROUP_KEY)) {
             resource = paramValues.get(TENANT_KEY) + "+" + paramValues.get(GROUP_KEY);
@@ -91,7 +100,29 @@ public class SpasAdapter {
         }
         return getSignHeaders(resource, secretKey);
     }
-    
+
+    public static Map<String, String> getTotpSignHeaders(String secretKey) {
+        Map<String, String> header = Maps.newHashMap();
+        long timestamp = System.currentTimeMillis();
+        if (secretKey != null) {
+            long minuteTimestamp = Date.from(Instant.ofEpochMilli(timestamp)
+                    .atZone(ZoneId.systemDefault())
+                    .withSecond(0)
+                    .withNano(0)
+                    .toLocalDateTime()
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant()).getTime();
+            String signatureData = AppNameUtils.getAppName() + SERVICE_INFO_SPLITER + minuteTimestamp;
+            String signature = signWithHmacSha1Encrypt(signatureData, secretKey);
+            header.put(SIGNATURE_HEADER, signature);
+            header.put("authType", "app");
+        }
+        header.put(TIMESTAMP_HEADER, String.valueOf(timestamp));
+        header.put(APPNAME, AppNameUtils.getAppName());
+        header.put("env", EnvUtil.getEnv());
+        return header;
+    }
+
     public static String getSk() {
         return CredentialService.getInstance().getCredential().getSecretKey();
     }

@@ -16,11 +16,14 @@
 
 package com.alibaba.nacos.console.security.nacos.users;
 
+import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.auth.common.AuthConfigs;
 import com.alibaba.nacos.config.server.auth.UserPersistService;
 import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.model.User;
 import com.alibaba.nacos.console.utils.PasswordEncoderUtil;
+import com.alibaba.nacos.core.auth.AppAuthConfig;
+import com.alibaba.nacos.core.auth.AppAuthConfigSelector;
 import com.alibaba.nacos.core.utils.Loggers;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -54,16 +57,30 @@ public class NacosUserDetailsServiceImpl implements UserDetailsService {
     
     @Autowired
     private AuthConfigs authConfigs;
+
+    @Autowired
+    private AppAuthConfigSelector appAuthConfigSelector;
+
+    private void reloadFromAppAuthConfig(Map<String, User> userMap) throws NacosException {
+        List<AppAuthConfig> appAuthConfigs = appAuthConfigSelector.selectAll();
+        for (AppAuthConfig appAuthConfig : appAuthConfigs) {
+
+        }
+    }
     
     @Scheduled(initialDelay = 5000, fixedDelay = 15000)
     private void reload() {
         try {
+            Map<String, User> map = new ConcurrentHashMap<>(16);
+            reloadFromAppAuthConfig(map);
             Page<User> users = getUsersFromDatabase(1, Integer.MAX_VALUE);
             if (users == null) {
+                if (!map.isEmpty()) {
+                    userMap = map;
+                }
                 return;
             }
-            
-            Map<String, User> map = new ConcurrentHashMap<>(16);
+
             for (User user : users.getPageItems()) {
                 map.put(user.getUsername(), user);
             }

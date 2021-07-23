@@ -102,5 +102,9 @@ public class EmbeddedPermissionPersistServiceImpl implements PermissionPersistSe
         EmbeddedStorageContextUtils.addSqlContext(sql, role, resource, action);
         databaseOperate.blockUpdate();
     }
-    
+
+    @Override
+    public List<UserAppPermission> findUserAppPermissions(String username) {
+        throw new UnsupportedOperationException();
+    }
 }

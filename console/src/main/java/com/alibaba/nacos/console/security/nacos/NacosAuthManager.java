@@ -40,6 +40,8 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+import static com.alibaba.nacos.api.common.Constants.APPNAME;
+
 /**
  * Builtin access control entry of Nacos.
  *
@@ -54,7 +56,11 @@ public class NacosAuthManager implements AuthManager {
     private static final String PARAM_USERNAME = "username";
     
     private static final String PARAM_PASSWORD = "password";
-    
+
+    private static final String HEADER_AUTH_TYPE = "authType";
+
+    private static final String HEADER_AUTH_TYPE_APP = "app";
+
     @Autowired
     private JwtTokenManager tokenManager;
     
@@ -137,13 +143,39 @@ public class NacosAuthManager implements AuthManager {
 
     @Override
     public User unionLogin(Object request) throws AccessException {
-
-        return null;
+        String authType = getRequestHeader(request, HEADER_AUTH_TYPE);
+        if (!HEADER_AUTH_TYPE_APP.equals(authType)) {
+            return request instanceof HttpServletRequest ? login(request) : loginRemote(request);
+        }
+        return loginHmac(request);
     }
 
     @Override
     public User loginHmac(Object request) throws AccessException {
-        return null;
+        String env = getRequestHeader(request, "env");
+        String appName = getRequestHeader(request, "AppName");
+        String timestamp = getRequestHeader(request, "Timestamp");
+        String accessKey = getRequestHeader(request, "Spas-AccessKey");
+        String signature = getRequestHeader(request, "Spas-Signature");
+
+        Authentication authenticate;
+        try {
+            Authentication authentication = new AppHmacAuthentication(appName, env, timestamp, accessKey, signature);
+            authenticate = authenticationManager.authenticate(authentication);
+        } catch (AuthenticationException e) {
+            throw new AccessException("unknown user!");
+        }
+        if (authenticate == null) {
+            throw new AccessException("unknown user!");
+        }
+        String token = tokenManager.createToken(authenticate.getName());
+        Authentication authentication = tokenManager.getAuthentication(token);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        NacosUser nacosUser = new NacosUser();
+        nacosUser.setUserName(authentication.getName());
+        nacosUser.setToken(token);
+        return nacosUser;
     }
 
     @Override

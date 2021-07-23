@@ -126,5 +126,9 @@ public class ExternalPermissionPersistServiceImpl implements PermissionPersistSe
             throw e;
         }
     }
-    
+
+    @Override
+    public List<UserAppPermission> findUserAppPermissions(String username) {
+        return null;
+    }
 }
