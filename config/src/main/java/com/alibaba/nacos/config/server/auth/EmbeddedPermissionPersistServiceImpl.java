@@ -107,4 +107,9 @@ public class EmbeddedPermissionPersistServiceImpl implements PermissionPersistSe
     public List<UserAppPermission> findUserAppPermissions(String username) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public List<UserAppPermission> findAllUserAppPermissions() {
+        throw new UnsupportedOperationException();
+    }
 }

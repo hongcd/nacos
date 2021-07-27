@@ -23,10 +23,18 @@ import com.alibaba.nacos.auth.exception.AccessException;
 import com.alibaba.nacos.auth.model.Permission;
 import com.alibaba.nacos.auth.model.User;
 import com.alibaba.nacos.config.server.auth.RoleInfo;
+import com.alibaba.nacos.config.server.model.ConfigKey;
+import com.alibaba.nacos.config.server.service.repository.PersistService;
+import com.alibaba.nacos.config.server.utils.LogUtil;
 import com.alibaba.nacos.config.server.utils.RequestUtil;
 import com.alibaba.nacos.console.security.nacos.roles.NacosRoleServiceImpl;
 import com.alibaba.nacos.console.security.nacos.users.NacosUser;
+import com.alibaba.nacos.console.security.nacos.users.NacosUserDetailsServiceImpl;
+import com.alibaba.nacos.core.model.AppPermission;
 import com.alibaba.nacos.core.utils.Loggers;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,12 +43,20 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
-import static com.alibaba.nacos.api.common.Constants.APPNAME;
+import static com.alibaba.nacos.api.common.Constants.ALL_PATTERN;
+import static com.alibaba.nacos.api.common.Constants.COLON;
+import static com.alibaba.nacos.api.remote.RemoteConstants.LABEL_MODULE_CONFIG;
+import static com.alibaba.nacos.api.remote.RemoteConstants.LABEL_MODULE_NAMING;
 
 /**
  * Builtin access control entry of Nacos.
@@ -69,6 +85,39 @@ public class NacosAuthManager implements AuthManager {
     
     @Autowired
     private NacosRoleServiceImpl roleService;
+
+    @Autowired
+    private NacosUserDetailsServiceImpl nacosUserDetailsService;
+
+    @Autowired
+    private PersistService persistService;
+
+
+    private LoadingCache<ConfigKey, Optional<String>> configAppNameCache;
+
+    @PostConstruct
+    void init() {
+        configAppNameCache = CacheBuilder.newBuilder()
+                .concurrencyLevel(Runtime.getRuntime().availableProcessors())
+                .initialCapacity(10)
+                .maximumSize(100)
+                .expireAfterWrite(60, TimeUnit.SECONDS)
+                .build(new CacheLoader<ConfigKey, Optional<String>>() {
+                    @Override
+                    public Optional<String> load(@Nonnull ConfigKey key) {
+                        try {
+                            ConfigKey configKey = persistService.findConfigKey(key.getDataId(), key.getGroup(), key.getTenant());
+                            if (configKey == null) {
+                                return Optional.empty();
+                            }
+                            return Optional.ofNullable(configKey.getAppName());
+                        } catch (Exception e) {
+                            Loggers.AUTH.error("[init] query data from config center, config: " + key + ", msg: " + e.getMessage(), e);
+                            return Optional.empty();
+                        }
+                    }
+                });
+    }
     
     @Override
     public User login(Object request) throws AccessException {
@@ -187,6 +236,54 @@ public class NacosAuthManager implements AuthManager {
         if (!roleService.hasPermission(user.getUserName(), permission)) {
             throw new AccessException("authorization failed!");
         }
+        if (user instanceof NacosUser && ((NacosUser) user).isGlobalAdmin()) {
+            return;
+        }
+
+        int partLength = 3;
+        String[] resourceParts = permission.getResource().split(COLON);
+        if (resourceParts.length != partLength) {
+            throw new IllegalArgumentException("resource: [" + permission.getResource() + "] invalid!");
+        }
+        String namespace = resourceParts[0];
+        String group = resourceParts[1];
+        String lastResource = resourceParts[2];
+
+        if (ALL_PATTERN.equals(lastResource)) {
+            return;
+        }
+        int moduleDataLength = 2;
+        String[] moduleDataIdParts = lastResource.split("/");
+        if (moduleDataIdParts.length != moduleDataLength) {
+            throw new IllegalArgumentException("lastResource: [" + lastResource + "] invalid!");
+        }
+        String appName = null;
+        String module = moduleDataIdParts[0];
+        if (ALL_PATTERN.equals(moduleDataIdParts[1])) {
+            return;
+        }
+        if (LABEL_MODULE_CONFIG.equals(module)) {
+            String dataId = moduleDataIdParts[1];
+            Optional<String> appOptional = configAppNameCache.getUnchecked(new ConfigKey(dataId, group, namespace));
+            if (!appOptional.isPresent()) {
+                LogUtil.DEFAULT_LOG.warn("config not found! dataId: {}, group: {}, tenant: {}", dataId, group, namespace);
+                return;
+            }
+            appName = appOptional.get();
+        } else if (LABEL_MODULE_NAMING.equals(module)) {
+            appName = moduleDataIdParts[1];
+        }
+
+        com.alibaba.nacos.config.server.model.User userDetails = nacosUserDetailsService.getUser(user.getUserName());
+        if (userDetails == null) {
+            throw new UsernameNotFoundException(user.getUserName() + " not found!");
+        }
+        for (AppPermission ap : userDetails.getAppPermissions()) {
+            if (ap.getAppName() != null && ap.getAppName().equals(appName) && ap.getAction().contains(permission.getAction())) {
+                return;
+            }
+        }
+        throw new AccessException("authorization failed!");
     }
 
     /**

@@ -61,32 +61,6 @@ public class ConfigResourceParser implements ResourceParser {
     @Autowired
     private PersistService persistService;
 
-    private Cache<Triple<String, String, String>, String> dataAppNameCache;
-
-    @PostConstruct
-    private void init() {
-        dataAppNameCache = CacheBuilder.newBuilder()
-                .concurrencyLevel(Runtime.getRuntime().availableProcessors())
-                .initialCapacity(10)
-                .maximumSize(100)
-                .expireAfterWrite(60, TimeUnit.SECONDS)
-                .build(new CacheLoader<Triple<String, String, String>, String>() {
-                    @Override
-                    public String load(Triple<String, String, String> triple) {
-                        try {
-                            ConfigKey configKey = persistService.findConfigKey(triple.getLeft(), triple.getMiddle(), triple.getRight());
-                            if (configKey == null) {
-                                return ALL_PATTERN;
-                            }
-                            return configKey.getAppName();
-                        } catch (Exception e) {
-                            Loggers.AUTH.error("[init] query data from config center, config: " + triple + ", msg: " + e.getMessage(), e);
-                            throw new InvalidCacheLoadException(e.getMessage());
-                        }
-                    }
-                });
-    }
-
     @Override
     public String parseName(Object requestObj) {
         

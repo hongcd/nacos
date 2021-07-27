@@ -17,6 +17,7 @@
 package com.alibaba.nacos.config.server.model;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * ConfigKey.
@@ -39,12 +40,16 @@ public class ConfigKey implements Serializable {
     }
     
     public ConfigKey(String appName, String dataId, String group, String tenant) {
+        this(dataId, group, tenant);
         this.appName = appName;
+    }
+
+    public ConfigKey(String dataId, String group, String tenant) {
         this.dataId = dataId;
         this.group = group;
         this.tenant = tenant;
     }
-    
+
     public String getAppName() {
         return appName;
     }
@@ -75,5 +80,22 @@ public class ConfigKey implements Serializable {
 
     public void setTenant(String tenant) {
         this.tenant = tenant;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ConfigKey configKey = (ConfigKey) o;
+        return Objects.equals(appName, configKey.appName) && dataId.equals(configKey.dataId) && group.equals(configKey.group) && tenant.equals(configKey.tenant);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(appName, dataId, group, tenant);
     }
 }

@@ -64,4 +64,11 @@ public interface PermissionPersistService {
      * @return app permissions info
      */
     List<UserAppPermission> findUserAppPermissions(String username);
+
+    /**
+     * get all user app permissions.
+     *
+     * @return all app permission info
+     */
+    List<UserAppPermission> findAllUserAppPermissions();
 }

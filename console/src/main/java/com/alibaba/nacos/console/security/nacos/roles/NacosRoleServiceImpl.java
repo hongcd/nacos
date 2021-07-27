@@ -28,8 +28,9 @@ import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.utils.RequestUtil;
 import com.alibaba.nacos.console.security.nacos.NacosAuthConfig;
 import com.alibaba.nacos.console.security.nacos.users.NacosUserDetailsServiceImpl;
-import com.alibaba.nacos.core.auth.AppAuthConfig;
+import com.alibaba.nacos.core.model.AppAuthConfig;
 import com.alibaba.nacos.core.auth.AppAuthConfigSelector;
+import com.alibaba.nacos.core.model.PermissionExt;
 import com.alibaba.nacos.core.utils.Loggers;
 import com.google.common.collect.Lists;
 import io.jsonwebtoken.lang.Collections;
@@ -86,13 +87,13 @@ public class NacosRoleServiceImpl {
         List<AppAuthConfig> appAuthConfigs = appAuthConfigSelector.selectAll();
         for (AppAuthConfig appAuthConfig : appAuthConfigs) {
             String appName = appAuthConfig.getAppName();
-            List<AppAuthConfig.Permission> defaultPermissions = appAuthConfig.getDefaultPermissions();
+            List<PermissionExt> defaultPermissions = appAuthConfig.getDefaultPermissions();
 
             appAuthConfig.getEnvs().forEach((envName, env) -> {
-                List<AppAuthConfig.Permission> envPermissions = env.getPermissions();
+                List<PermissionExt> envPermissions = env.getPermissions();
                 if (env.isExtendsDefaultPermissions()) {
                     Set<String> envPermissionIds = envPermissions.stream()
-                            .map(AppAuthConfig.Permission::getId)
+                            .map(PermissionExt::getId)
                             .collect(Collectors.toSet());
                     defaultPermissions.stream()
                             .filter(permission -> !envPermissionIds.contains(permission.getId()))
@@ -113,7 +114,7 @@ public class NacosRoleServiceImpl {
         }
     }
     
-    @Scheduled(initialDelay = 5000, fixedDelay = 15000)
+    @Scheduled(initialDelay = 5000, fixedDelay = 30000)
     private void reload() {
         Set<String> tmpRoleSet = new HashSet<>(16);
         Map<String, List<RoleInfo>> tmpRoleInfoMap = new ConcurrentHashMap<>(16);

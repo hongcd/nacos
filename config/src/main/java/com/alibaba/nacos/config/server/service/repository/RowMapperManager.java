@@ -18,6 +18,7 @@ package com.alibaba.nacos.config.server.service.repository;
 
 import com.alibaba.nacos.config.server.auth.PermissionInfo;
 import com.alibaba.nacos.config.server.auth.RoleInfo;
+import com.alibaba.nacos.config.server.auth.UserAppPermission;
 import com.alibaba.nacos.config.server.model.ConfigAdvanceInfo;
 import com.alibaba.nacos.config.server.model.ConfigAllInfo;
 import com.alibaba.nacos.config.server.model.ConfigHistoryInfo;
@@ -85,7 +86,9 @@ public final class RowMapperManager {
     public static final RoleInfoRowMapper ROLE_INFO_ROW_MAPPER = new RoleInfoRowMapper();
     
     public static final PermissionRowMapper PERMISSION_ROW_MAPPER = new PermissionRowMapper();
-    
+
+    public static final UserAppPermissionRowMapper USER_APP_PERMISSION_ROW_MAPPER = new UserAppPermissionRowMapper();
+
     public static final MapRowMapper MAP_ROW_MAPPER = new MapRowMapper();
     
     public static Map<String, RowMapper> mapperMap = new HashMap<>(16);
@@ -165,7 +168,11 @@ public final class RowMapperManager {
         // PERMISSION_ROW_MAPPER
         
         mapperMap.put(PERMISSION_ROW_MAPPER.getClass().getCanonicalName(), PERMISSION_ROW_MAPPER);
-        
+
+        // USER_APP_PERMISSION_ROW_MAPPER
+
+        mapperMap.put(USER_APP_PERMISSION_ROW_MAPPER.getClass().getCanonicalName(), USER_APP_PERMISSION_ROW_MAPPER);
+
         // MAP_ROW_MAPPER
         
         mapperMap.put(MAP_ROW_MAPPER.getClass().getCanonicalName(), MAP_ROW_MAPPER);
@@ -573,5 +580,17 @@ public final class RowMapperManager {
             return info;
         }
     }
-    
+
+    public static final class UserAppPermissionRowMapper implements RowMapper<UserAppPermission> {
+
+        @Override
+        public UserAppPermission mapRow(ResultSet rs, int rowNum) throws SQLException {
+            UserAppPermission userAppPermission = new UserAppPermission();
+            userAppPermission.setId(rs.getLong("id"));
+            userAppPermission.setUsername(rs.getString("username"));
+            userAppPermission.setApp(rs.getString("app"));
+            userAppPermission.setAction(rs.getString("action"));
+            return userAppPermission;
+        }
+    }
 }

@@ -18,12 +18,16 @@ package com.alibaba.nacos.console.security.nacos.users;
 
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.auth.common.AuthConfigs;
+import com.alibaba.nacos.config.server.auth.PermissionPersistService;
+import com.alibaba.nacos.config.server.auth.UserAppPermission;
 import com.alibaba.nacos.config.server.auth.UserPersistService;
 import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.model.User;
 import com.alibaba.nacos.console.utils.PasswordEncoderUtil;
-import com.alibaba.nacos.core.auth.AppAuthConfig;
+import com.alibaba.nacos.core.model.AppAuthConfig;
 import com.alibaba.nacos.core.auth.AppAuthConfigSelector;
+import com.alibaba.nacos.core.model.AppPermission;
+import com.alibaba.nacos.core.model.Env;
 import com.alibaba.nacos.core.utils.Loggers;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,11 +38,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
+import static com.alibaba.nacos.api.common.Constants.COLON;
 import static com.alibaba.nacos.api.common.Constants.COMMA;
 
 /**
@@ -54,6 +58,9 @@ public class NacosUserDetailsServiceImpl implements UserDetailsService {
     
     @Autowired
     private UserPersistService userPersistService;
+
+    @Autowired
+    private PermissionPersistService permissionPersistService;
     
     @Autowired
     private AuthConfigs authConfigs;
@@ -64,11 +71,17 @@ public class NacosUserDetailsServiceImpl implements UserDetailsService {
     private void reloadFromAppAuthConfig(Map<String, User> userMap) throws NacosException {
         List<AppAuthConfig> appAuthConfigs = appAuthConfigSelector.selectAll();
         for (AppAuthConfig appAuthConfig : appAuthConfigs) {
-
+            Map<String, Env> envs = appAuthConfig.getEnvs();
+            envs.forEach((envName, env) -> {
+                User appUser = new User();
+                appUser.setUsername(appAuthConfig.getAppName() + COLON + envName);
+                appUser.setAppPermissions(appAuthConfig.getAppPermissions());
+                userMap.put(appUser.getUsername(), appUser);
+            });
         }
     }
     
-    @Scheduled(initialDelay = 5000, fixedDelay = 15000)
+    @Scheduled(initialDelay = 5000, fixedDelay = 30000)
     private void reload() {
         try {
             Map<String, User> map = new ConcurrentHashMap<>(16);
@@ -81,7 +94,12 @@ public class NacosUserDetailsServiceImpl implements UserDetailsService {
                 return;
             }
 
+            Map<String, List<AppPermission>> permissionMap = permissionPersistService.findAllUserAppPermissions().stream()
+                    .collect(Collectors.groupingBy(UserAppPermission::getUsername, Collectors
+                            .mapping(p -> new AppPermission(p.getApp(), p.getAction()), Collectors.toList())));
+
             for (User user : users.getPageItems()) {
+                user.setAppPermissions(permissionMap.getOrDefault(user.getUsername(), Collections.emptyList()));
                 map.put(user.getUsername(), user);
             }
             userMap = map;
@@ -95,13 +113,19 @@ public class NacosUserDetailsServiceImpl implements UserDetailsService {
         
         User user = userMap.get(username);
         if (!authConfigs.isCachingEnabled()) {
-            user = userPersistService.findUserByUsername(username);
+            user = getUserFromDatabase(username);
         }
         
         if (user == null) {
             throw new UsernameNotFoundException(username);
         }
         return new NacosUserDetails(user);
+    }
+
+    private List<AppPermission> getUserAppPermissions(String username) {
+        return permissionPersistService.findUserAppPermissions(username).stream()
+                .map(userAppPermission -> new AppPermission(userAppPermission.getApp(), userAppPermission.getAction()))
+                .collect(Collectors.toList());
     }
     
     public void updateUserPassword(String username, String password) {
@@ -137,7 +161,11 @@ public class NacosUserDetailsServiceImpl implements UserDetailsService {
     }
     
     public User getUserFromDatabase(String username) {
-        return userPersistService.findUserByUsername(username);
+        User user = userPersistService.findUserByUsername(username);
+        if (user != null) {
+            user.setAppPermissions(getUserAppPermissions(username));
+        }
+        return user;
     }
 
     public List<String> findUserLikeUsername(String username) {

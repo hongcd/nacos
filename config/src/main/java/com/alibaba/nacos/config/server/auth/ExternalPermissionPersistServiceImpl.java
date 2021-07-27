@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.alibaba.nacos.config.server.service.repository.RowMapperManager.PERMISSION_ROW_MAPPER;
+import static com.alibaba.nacos.config.server.service.repository.RowMapperManager.USER_APP_PERMISSION_ROW_MAPPER;
 
 /**
  * Implemetation of ExternalPermissionPersistServiceImpl.
@@ -129,6 +130,23 @@ public class ExternalPermissionPersistServiceImpl implements PermissionPersistSe
 
     @Override
     public List<UserAppPermission> findUserAppPermissions(String username) {
-        return null;
+        String sql = "SELECT id, username, app, action FROM users_app_permission WHERE username = ?";
+        try {
+            return jt.query(sql, USER_APP_PERMISSION_ROW_MAPPER, username);
+        } catch (CannotGetJdbcConnectionException e) {
+            LogUtil.FATAL_LOG.error("[db-error] " + e, e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<UserAppPermission> findAllUserAppPermissions() {
+        String sql = "SELECT id, username, app, action FROM users_app_permission";
+        try {
+            return jt.query(sql, USER_APP_PERMISSION_ROW_MAPPER);
+        } catch (CannotGetJdbcConnectionException e) {
+            LogUtil.FATAL_LOG.error("[db-error] " + e, e);
+            throw e;
+        }
     }
 }

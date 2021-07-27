@@ -18,11 +18,10 @@ package com.alibaba.nacos.console.security.nacos;
 
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.client.config.impl.SpasAdapter;
-import com.alibaba.nacos.config.server.remote.ConfigQueryRequestHandler;
 import com.alibaba.nacos.config.server.utils.LogUtil;
-import com.alibaba.nacos.console.security.nacos.users.NacosUserDetailsServiceImpl;
-import com.alibaba.nacos.core.auth.AppAuthConfig;
 import com.alibaba.nacos.core.auth.AppAuthConfigSelector;
+import com.alibaba.nacos.core.model.AppAuthConfig;
+import com.alibaba.nacos.core.model.Env;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.CredentialsExpiredException;
@@ -46,17 +45,9 @@ import static com.alibaba.nacos.api.common.Constants.SERVICE_INFO_SPLITER;
 @Component
 public class AppHmacAuthenticationProvider implements AuthenticationProvider {
 
-    private final NacosUserDetailsServiceImpl userDetailsService;
-
-    private final ConfigQueryRequestHandler configQueryRequestHandler;
-
     private final AppAuthConfigSelector appAuthConfigSelector;
 
-    public AppHmacAuthenticationProvider(NacosUserDetailsServiceImpl userDetailsService,
-                                         ConfigQueryRequestHandler configQueryRequestHandler,
-                                         AppAuthConfigSelector appAuthConfigSelector) {
-        this.userDetailsService = userDetailsService;
-        this.configQueryRequestHandler = configQueryRequestHandler;
+    public AppHmacAuthenticationProvider(AppAuthConfigSelector appAuthConfigSelector) {
         this.appAuthConfigSelector = appAuthConfigSelector;
     }
 
@@ -74,7 +65,7 @@ public class AppHmacAuthenticationProvider implements AuthenticationProvider {
             return null;
         }
         AppHmacAuthentication.AppHmacAuthConfig config = (AppHmacAuthentication.AppHmacAuthConfig) authentication.getCredentials();
-        AppAuthConfig.Env env = appAuthConfig.getEnvs().get(config.getEnv());
+        Env env = appAuthConfig.getEnvs().get(config.getEnv());
         if (env == null) {
             return null;
         }

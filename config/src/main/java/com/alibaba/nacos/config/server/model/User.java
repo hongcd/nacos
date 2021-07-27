@@ -16,6 +16,8 @@
 
 package com.alibaba.nacos.config.server.model;
 
+import com.alibaba.nacos.core.model.AppPermission;
+
 import java.io.Serializable;
 import java.util.List;
 
