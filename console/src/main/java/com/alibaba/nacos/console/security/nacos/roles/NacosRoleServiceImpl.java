@@ -29,7 +29,7 @@ import com.alibaba.nacos.config.server.utils.RequestUtil;
 import com.alibaba.nacos.console.security.nacos.NacosAuthConfig;
 import com.alibaba.nacos.console.security.nacos.users.NacosUserDetailsServiceImpl;
 import com.alibaba.nacos.core.model.AppAuthConfig;
-import com.alibaba.nacos.core.auth.AppAuthConfigSelector;
+import com.alibaba.nacos.core.selector.AppAuthConfigSelector;
 import com.alibaba.nacos.core.model.PermissionExt;
 import com.alibaba.nacos.core.utils.Loggers;
 import com.google.common.collect.Lists;

@@ -40,7 +40,7 @@ public class AppAuthConfig implements Serializable {
 
     private List<PermissionExt> defaultPermissions;
 
-    private Map<String, Env> envs;
+    private Map<String, AppEnv> envs;
 
     public String getAppName() {
         return appName;
@@ -82,11 +82,11 @@ public class AppAuthConfig implements Serializable {
         this.defaultPermissions = defaultPermissions;
     }
 
-    public Map<String, Env> getEnvs() {
+    public Map<String, AppEnv> getEnvs() {
         return envs;
     }
 
-    public void setEnvs(Map<String, Env> envs) {
+    public void setEnvs(Map<String, AppEnv> envs) {
         this.envs = envs;
     }
 }

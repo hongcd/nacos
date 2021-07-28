@@ -25,9 +25,9 @@ import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.model.User;
 import com.alibaba.nacos.console.utils.PasswordEncoderUtil;
 import com.alibaba.nacos.core.model.AppAuthConfig;
-import com.alibaba.nacos.core.auth.AppAuthConfigSelector;
+import com.alibaba.nacos.core.selector.AppAuthConfigSelector;
 import com.alibaba.nacos.core.model.AppPermission;
-import com.alibaba.nacos.core.model.Env;
+import com.alibaba.nacos.core.model.AppEnv;
 import com.alibaba.nacos.core.utils.Loggers;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -71,8 +71,8 @@ public class NacosUserDetailsServiceImpl implements UserDetailsService {
     private void reloadFromAppAuthConfig(Map<String, User> userMap) throws NacosException {
         List<AppAuthConfig> appAuthConfigs = appAuthConfigSelector.selectAll();
         for (AppAuthConfig appAuthConfig : appAuthConfigs) {
-            Map<String, Env> envs = appAuthConfig.getEnvs();
-            envs.forEach((envName, env) -> {
+            Map<String, AppEnv> envs = appAuthConfig.getEnvs();
+            envs.forEach((envName, appEnv) -> {
                 User appUser = new User();
                 appUser.setUsername(appAuthConfig.getAppName() + COLON + envName);
                 appUser.setAppPermissions(appAuthConfig.getAppPermissions());

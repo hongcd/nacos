@@ -16,10 +16,13 @@
 
 package com.alibaba.nacos.config.server.configuration;
 
+import com.alibaba.nacos.config.server.auth.IpAdmissionControl;
 import com.alibaba.nacos.config.server.filter.NacosWebFilter;
 import com.alibaba.nacos.config.server.filter.CurcuitFilter;
+import com.alibaba.nacos.config.server.remote.ConfigQueryRequestHandler;
 import com.alibaba.nacos.config.server.service.NacosAuthNamespaceCreateRunner;
 import com.alibaba.nacos.config.server.service.repository.PersistService;
+import com.alibaba.nacos.core.admission.AdmissionControl;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -72,5 +75,11 @@ public class NacosConfigConfiguration {
     @ConditionalOnProperty(name = "mtc.nacos.core.auth.namespace.id")
     public ApplicationRunner nacosAuthNamespaceCreateRunner(PersistService persistService) {
         return new NacosAuthNamespaceCreateRunner(persistService);
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "mtc.nacos.core.auth.namespace.id")
+    public AdmissionControl ipAdmissionControl(ConfigQueryRequestHandler configQueryRequestHandler) {
+        return new IpAdmissionControl(configQueryRequestHandler);
     }
 }

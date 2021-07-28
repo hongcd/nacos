@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.alibaba.nacos.core.auth;
+package com.alibaba.nacos.core.selector;
 
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.core.model.AppAuthConfig;

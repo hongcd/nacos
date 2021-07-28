@@ -19,9 +19,9 @@ package com.alibaba.nacos.console.security.nacos;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.client.config.impl.SpasAdapter;
 import com.alibaba.nacos.config.server.utils.LogUtil;
-import com.alibaba.nacos.core.auth.AppAuthConfigSelector;
+import com.alibaba.nacos.core.selector.AppAuthConfigSelector;
 import com.alibaba.nacos.core.model.AppAuthConfig;
-import com.alibaba.nacos.core.model.Env;
+import com.alibaba.nacos.core.model.AppEnv;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.CredentialsExpiredException;
@@ -65,11 +65,11 @@ public class AppHmacAuthenticationProvider implements AuthenticationProvider {
             return null;
         }
         AppHmacAuthentication.AppHmacAuthConfig config = (AppHmacAuthentication.AppHmacAuthConfig) authentication.getCredentials();
-        Env env = appAuthConfig.getEnvs().get(config.getEnv());
-        if (env == null) {
+        AppEnv appEnv = appAuthConfig.getEnvs().get(config.getEnv());
+        if (appEnv == null) {
             return null;
         }
-        if (!StringUtils.equals(env.getAccessKey(), config.getAccessKey())) {
+        if (!StringUtils.equals(appEnv.getAccessKey(), config.getAccessKey())) {
             return null;
         }
         long requestTimestamp = Long.parseLong(config.getTimestamp());
@@ -88,7 +88,7 @@ public class AppHmacAuthenticationProvider implements AuthenticationProvider {
                 .toInstant()).getTime();
         String signatureData = appName + SERVICE_INFO_SPLITER + minuteTimestamp;
         String clientSign = config.getSignature();
-        String serverSign = SpasAdapter.signWithHmacSha1Encrypt(signatureData, env.getSecretKey());
+        String serverSign = SpasAdapter.signWithHmacSha1Encrypt(signatureData, appEnv.getSecretKey());
         if (!StringUtils.equals(clientSign, serverSign)) {
             throw new CredentialsExpiredException("[app hmac] invalid sign");
         }

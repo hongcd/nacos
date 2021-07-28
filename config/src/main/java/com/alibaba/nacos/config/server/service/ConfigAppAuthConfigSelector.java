@@ -26,7 +26,7 @@ import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.remote.ConfigQueryRequestHandler;
 import com.alibaba.nacos.config.server.service.repository.PersistService;
 import com.alibaba.nacos.core.model.AppAuthConfig;
-import com.alibaba.nacos.core.auth.AppAuthConfigSelector;
+import com.alibaba.nacos.core.selector.AppAuthConfigSelector;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

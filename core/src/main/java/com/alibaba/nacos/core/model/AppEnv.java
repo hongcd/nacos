@@ -25,7 +25,7 @@ import java.util.List;
  * @author candong.hong
  * @since 2021-7-26
  */
-public class Env implements Serializable {
+public class AppEnv implements Serializable {
 
     private static final long serialVersionUID = 1693493542087638565L;
 
