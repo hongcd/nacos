@@ -14,22 +14,28 @@
  * limitations under the License.
  */
 
-package com.alibaba.nacos.core.auth;
+package com.alibaba.nacos.core.config;
 
+import com.alibaba.nacos.core.admission.AdmissionControl;
+import com.alibaba.nacos.core.admission.basic.IpAdmissionControl;
+import com.alibaba.nacos.core.auth.AuthFilter;
+import com.alibaba.nacos.core.selector.NamespaceAuthConfigSelector;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * auth filter config.
+ * core configuration.
  *
- * @author mai.jh
+ * @author candong.hong
+ * @since 2021-7-29
  */
 @Configuration
-public class AuthConfig {
+public class CoreConfiguration {
     
     @Bean
-    public FilterRegistrationBean authFilterRegistration() {
+    public FilterRegistrationBean<AuthFilter> authFilterRegistration() {
         FilterRegistrationBean<AuthFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(authFilter());
         registration.addUrlPatterns("/*");
@@ -42,5 +48,11 @@ public class AuthConfig {
     @Bean
     public AuthFilter authFilter() {
         return new AuthFilter();
+    }
+
+    @Bean
+    @ConditionalOnBean(NamespaceAuthConfigSelector.class)
+    AdmissionControl ipAdmissionControl(NamespaceAuthConfigSelector namespaceAuthConfigSelector) {
+        return new IpAdmissionControl(namespaceAuthConfigSelector);
     }
 }

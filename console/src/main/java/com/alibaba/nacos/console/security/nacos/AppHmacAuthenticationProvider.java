@@ -75,8 +75,10 @@ public class AppHmacAuthenticationProvider implements AuthenticationProvider {
         long requestTimestamp = Long.parseLong(config.getTimestamp());
         long currentTimestamp = System.currentTimeMillis();
         int maxOffsetMilliseconds = 60000;
-        if (requestTimestamp < (currentTimestamp - maxOffsetMilliseconds) || requestTimestamp > (currentTimestamp + maxOffsetMilliseconds)) {
-            LogUtil.DEFAULT_LOG.warn("[authenticate] request expired, requestTimestamp: {}, currentTimestamp: {}", requestTimestamp, currentTimestamp);
+        if (requestTimestamp < (currentTimestamp - maxOffsetMilliseconds)
+                || requestTimestamp > (currentTimestamp + maxOffsetMilliseconds)) {
+            LogUtil.DEFAULT_LOG.warn("[authenticate] request expired, requestTimestamp: {}, currentTimestamp: {}",
+                    requestTimestamp, currentTimestamp);
             throw new CredentialsExpiredException("[app hmac] request expired!");
         }
         long minuteTimestamp = Date.from(Instant.ofEpochMilli(requestTimestamp)

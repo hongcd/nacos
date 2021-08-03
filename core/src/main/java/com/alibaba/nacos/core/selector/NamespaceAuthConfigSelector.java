@@ -16,12 +16,29 @@
 
 package com.alibaba.nacos.core.selector;
 
+import com.alibaba.nacos.core.model.NamespaceAuthConfig;
+
 /**
  * namespace config selector.
  *
  * @author candong.hong
  * @since 2021-7-28
  */
-public interface NamespaceConfigSelector {
+public interface NamespaceAuthConfigSelector {
+    /**
+     * select config.
+     * @param namespaceId namespaceId
+     * @param module module
+     * @return {@link NamespaceAuthConfig}
+     */
+    NamespaceAuthConfig select(String namespaceId, String module);
 
+    /**
+     * select config with action.
+     * @param namespaceId namespaceId
+     * @param module module
+     * @param action action
+     * @return {@link NamespaceAuthConfig}
+     */
+    NamespaceAuthConfig select(String namespaceId, String module, String action);
 }

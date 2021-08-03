@@ -2495,6 +2495,22 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
     }
 
     @Override
+    public TenantInfo findTenantByKp(String kp, String tenantId) {
+        String sql = "SELECT tenant_id,tenant_name,tenant_desc,kp FROM tenant_info WHERE kp=? AND tenant_id=?";
+        try {
+            return jt.queryForObject(sql, new Object[] {kp, tenantId}, TENANT_INFO_ROW_MAPPER);
+        } catch (CannotGetJdbcConnectionException e) {
+            LogUtil.FATAL_LOG.error("[db-error] " + e.toString(), e);
+            throw e;
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        } catch (Exception e) {
+            LogUtil.FATAL_LOG.error("[db-other-error]" + e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public List<TenantInfo> findTenantByKps(List<String> kps) {
         if (CollectionUtils.isEmpty(kps)) {
             return Collections.emptyList();
@@ -2530,22 +2546,6 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
         }
     }
 
-    @Override
-    public TenantInfo findTenantByKp(String kp, String tenantId) {
-        String sql = "SELECT tenant_id,tenant_name,tenant_desc,kp FROM tenant_info WHERE kp=? AND tenant_id=?";
-        try {
-            return jt.queryForObject(sql, new Object[] {kp, tenantId}, TENANT_INFO_ROW_MAPPER);
-        } catch (CannotGetJdbcConnectionException e) {
-            LogUtil.FATAL_LOG.error("[db-error] " + e.toString(), e);
-            throw e;
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        } catch (Exception e) {
-            LogUtil.FATAL_LOG.error("[db-other-error]" + e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
-    }
-    
     @Override
     public void removeTenantInfoAtomic(final String kp, final String tenantId) {
         try {

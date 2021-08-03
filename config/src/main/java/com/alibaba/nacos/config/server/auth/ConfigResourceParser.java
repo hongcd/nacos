@@ -17,35 +17,18 @@
 package com.alibaba.nacos.config.server.auth;
 
 import com.alibaba.nacos.api.config.remote.request.ConfigBatchListenRequest;
-import com.alibaba.nacos.api.config.remote.request.ConfigQueryRequest;
-import com.alibaba.nacos.api.config.remote.response.ConfigQueryResponse;
-import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.remote.request.Request;
-import com.alibaba.nacos.api.remote.request.RequestMeta;
-import com.alibaba.nacos.api.utils.NetUtils;
 import com.alibaba.nacos.auth.model.Resource;
 import com.alibaba.nacos.auth.parser.ResourceParser;
-import com.alibaba.nacos.common.utils.ReflectUtils;
 import com.alibaba.nacos.common.utils.NamespaceUtil;
-import com.alibaba.nacos.config.server.model.ConfigKey;
-import com.alibaba.nacos.config.server.remote.ConfigQueryRequestHandler;
+import com.alibaba.nacos.common.utils.ReflectUtils;
 import com.alibaba.nacos.config.server.service.repository.PersistService;
-import com.alibaba.nacos.core.utils.Loggers;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import static com.alibaba.nacos.api.common.Constants.ALL_PATTERN;
 
 /**
  * Config resource parser.
@@ -99,7 +82,6 @@ public class ConfigResourceParser implements ResourceParser {
         } else {
             sb.append(Resource.SPLITTER).append(groupName);
         }
-
 
         if (StringUtils.isBlank(dataId)) {
             sb.append(Resource.SPLITTER).append(AUTH_CONFIG_PREFIX).append("*");

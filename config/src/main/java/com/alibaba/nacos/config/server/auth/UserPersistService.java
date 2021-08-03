@@ -39,7 +39,7 @@ public interface UserPersistService {
     void createUser(String username, String password);
 
     /**
-     * mtc-custom create user with kps.
+     * hx-custom create user with kps.
      *
      * @param username username
      * @param password password

@@ -20,7 +20,7 @@ const I18N_CONF = {
     docs: '文档',
     blog: '博客',
     community: '社区',
-    mtcWiki: '医药wiki',
+    hxWiki: '海西wiki',
     languageSwitchButton: 'En',
     logout: '登出',
     changePassword: '修改密码',

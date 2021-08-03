@@ -25,21 +25,21 @@ import com.alibaba.nacos.config.server.model.ConfigKey;
 import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.remote.ConfigQueryRequestHandler;
 import com.alibaba.nacos.config.server.service.repository.PersistService;
+import com.alibaba.nacos.config.server.utils.LogUtil;
 import com.alibaba.nacos.core.model.AppAuthConfig;
 import com.alibaba.nacos.core.selector.AppAuthConfigSelector;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * get app auth config from config center
+ * get app auth config from config center.
  * @author candong.hong
  * @since 2021-7-16
  */
-@Component
 public class ConfigAppAuthConfigSelector implements AppAuthConfigSelector {
 
     private final ConfigQueryRequestHandler configQueryRequestHandler;
@@ -51,10 +51,10 @@ public class ConfigAppAuthConfigSelector implements AppAuthConfigSelector {
      */
     private final Gson gson = new Gson();
 
-    @Value("${mtc.nacos.core.auth.namespace.id}")
+    @Value("${hx.nacos.core.auth.namespace.id}")
     private String authNamespaceId;
 
-    @Value("${mtc.nacos.core.auth.app.dataId.group:DEFAULT_GROUP}")
+    @Value("${hx.nacos.core.auth.app.dataId.group:DEFAULT_GROUP}")
     private String authAppGroup;
 
     public ConfigAppAuthConfigSelector(ConfigQueryRequestHandler configQueryRequestHandler, PersistService persistService) {
@@ -80,9 +80,13 @@ public class ConfigAppAuthConfigSelector implements AppAuthConfigSelector {
             if (!authAppGroup.equals(configKey.getGroup())) {
                 continue;
             }
-            AppAuthConfig appAuthConfig = select(configKey.getDataId());
-            if (appAuthConfig != null) {
-                resultConfigs.add(appAuthConfig);
+            try {
+                AppAuthConfig appAuthConfig = select(configKey.getDataId());
+                if (appAuthConfig != null) {
+                    resultConfigs.add(appAuthConfig);
+                }
+            } catch (JsonSyntaxException e) {
+                LogUtil.DEFAULT_LOG.error("[selectAll] select failure!, dataId: " + configKey.getDataId(), e);
             }
         }
         return resultConfigs;

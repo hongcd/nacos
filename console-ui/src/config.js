@@ -45,8 +45,8 @@ module.exports = {
         link: 'https://nacos.io/en-us/community',
       },
       {
-        key: 'mtcWiki',
-        text: 'MTC Wiki',
+        key: 'hxWiki',
+        text: 'HX Wiki',
         link: 'http://wiki.heisea.cn/pages/viewpage.action?pageId=35319180',
       },
       // {
@@ -110,7 +110,7 @@ module.exports = {
         link: 'https://nacos.io/zh-cn/community/index.html',
       },
       {
-        key: 'mtcWiki',
+        key: 'hxWiki',
         text: '医药wiki',
         link: 'http://wiki.heisea.cn/pages/viewpage.action?pageId=35319180',
       },

@@ -33,6 +33,7 @@ import com.alibaba.nacos.core.selector.AppAuthConfigSelector;
 import com.alibaba.nacos.core.model.PermissionExt;
 import com.alibaba.nacos.core.utils.Loggers;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import io.jsonwebtoken.lang.Collections;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.mina.util.ConcurrentHashSet;
@@ -40,7 +41,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -116,7 +119,7 @@ public class NacosRoleServiceImpl {
     
     @Scheduled(initialDelay = 5000, fixedDelay = 30000)
     private void reload() {
-        Set<String> tmpRoleSet = new HashSet<>(16);
+        Set<String> tmpRoleSet = Sets.newHashSet();
         Map<String, List<RoleInfo>> tmpRoleInfoMap = new ConcurrentHashMap<>(16);
         Map<String, List<PermissionInfo>> tmpPermissionInfoMap = new ConcurrentHashMap<>(16);
         try {
@@ -133,7 +136,7 @@ public class NacosRoleServiceImpl {
             }
             for (RoleInfo roleInfo : roleInfoPage.getPageItems()) {
                 if (!tmpRoleInfoMap.containsKey(roleInfo.getUsername())) {
-                    tmpRoleInfoMap.put(roleInfo.getUsername(), new ArrayList<>());
+                    tmpRoleInfoMap.put(roleInfo.getUsername(), Lists.newArrayList());
                 }
                 tmpRoleInfoMap.get(roleInfo.getUsername()).add(roleInfo);
                 tmpRoleSet.add(roleInfo.getRole());

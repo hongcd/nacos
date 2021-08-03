@@ -24,12 +24,12 @@ package com.alibaba.nacos.core.utils;
  */
 public enum RequestType {
     /**
-     * http
+     * http.
      */
     HTTP(1, "HTTP"),
 
     /**
-     * grpc
+     * grpc.
      */
     GRPC(2, "GRPC");
 

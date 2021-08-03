@@ -17,6 +17,7 @@
 package com.alibaba.nacos.auth.parser;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * Default resource parser.
@@ -25,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author mai.jh
  * @since 1.2.0
  */
+@Component
 public class DefaultResourceParser implements ResourceParser {
     
     @Override

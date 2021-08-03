@@ -20,7 +20,7 @@ const I18N_CONF = {
     docs: 'DOCS',
     blog: 'BLOG',
     community: 'COMMUNITY',
-    mtcWiki: 'MTC Wiki',
+    hxWiki: 'HX Wiki',
     languageSwitchButton: '中',
     logout: 'logout',
     changePassword: 'modify password',

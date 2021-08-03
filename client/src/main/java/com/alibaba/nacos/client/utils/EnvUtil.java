@@ -88,31 +88,31 @@ public class EnvUtil {
     /**
      * init env and set properties.
      * @param properties properties
-     * @throws NacosException missing mtc.properties
+     * @throws NacosException missing hx.properties
      */
     public static void initSystemAndPropertiesEnv(Properties properties) throws NacosException {
-        Properties mtcProps = new Properties();
+        Properties hxProps = new Properties();
         try {
-            mtcProps.load(EnvUtil.class.getClassLoader().getResourceAsStream("mtc.properties"));
+            hxProps.load(EnvUtil.class.getClassLoader().getResourceAsStream("hx.properties"));
         } catch (IOException e) {
-            LOGGER.error("[initSystemProperties] failure load mtc.properties, please check, msg: " + e.getMessage(), e);
+            LOGGER.error("[initSystemProperties] failure load hx.properties, please check, msg: " + e.getMessage(), e);
             throw new NacosException(CLIENT_INVALID_PARAM, e.getMessage(), e);
         }
-        String appName = mtcProps.getProperty("app.name");
+        String appName = hxProps.getProperty("app.name");
         if (StringUtils.isNotBlank(appName)) {
             System.setProperty(IdentifyConstants.PROJECT_NAME_PROPERTY, appName);
             properties.setProperty(APPNAME, appName);
         }
-        String env = mtcProps.getProperty("env");
+        String env = hxProps.getProperty("env");
         if (StringUtils.isNotBlank(appName)) {
             System.setProperty("env", env);
             properties.setProperty("env", env);
         }
-        String accessKey = mtcProps.getProperty("access-key");
+        String accessKey = hxProps.getProperty("access-key");
         if (StringUtils.isNotBlank(accessKey)) {
             properties.setProperty(PropertyKeyConst.ACCESS_KEY, accessKey);
         }
-        String secretKey = mtcProps.getProperty("secret-key");
+        String secretKey = hxProps.getProperty("secret-key");
         if (StringUtils.isNotBlank(secretKey)) {
             properties.setProperty(PropertyKeyConst.SECRET_KEY, secretKey);
         }

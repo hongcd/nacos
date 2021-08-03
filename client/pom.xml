@@ -25,10 +25,10 @@
     
     <modelVersion>4.0.0</modelVersion>
     
-    <artifactId>mtc-nacos-client</artifactId>
+    <artifactId>nacos-client</artifactId>
     <packaging>jar</packaging>
     
-    <name>mtc-nacos-client ${project.version}</name>
+    <name>nacos-client ${project.version}</name>
     <url>http://nacos.io</url>
     
     <properties>

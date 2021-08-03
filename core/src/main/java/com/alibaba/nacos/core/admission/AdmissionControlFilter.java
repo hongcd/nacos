@@ -30,12 +30,16 @@ import com.alibaba.nacos.core.utils.RequestType;
 import com.alibaba.nacos.core.utils.WebUtils;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.web.servlet.filter.OrderedFilter;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.ServletException;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -53,7 +57,7 @@ import static com.alibaba.nacos.auth.model.Resource.SPLITTER;
  * @since 2021-7-27
  */
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(OrderedFilter.REQUEST_WRAPPER_FILTER_MAX_ORDER)
 public class AdmissionControlFilter extends AbstractRequestFilter implements Filter {
 
     private final ApplicationContext applicationContext;
@@ -73,7 +77,7 @@ public class AdmissionControlFilter extends AbstractRequestFilter implements Fil
 
     @Override
     protected Response filter(Request request, RequestMeta meta, Class handlerClazz) throws NacosException {
-        if (!authConfigs.isAuthEnabled()) {
+        if (unnecessaryFilter()) {
             return null;
         }
         Method method = getHandleMethod(handlerClazz);
@@ -82,16 +86,17 @@ public class AdmissionControlFilter extends AbstractRequestFilter implements Fil
             admissionInfo.setClientIp(meta.getClientIp());
             admissionInfo.setRequestType(RequestType.GRPC);
             admissionInfo.setHeaderMap(request.getHeaders());
-            if (filter(admissionInfo)) {
+            if (admissionFilter(admissionInfo)) {
                 return null;
             }
         } catch (Exception e) {
+            Loggers.AUTH.error("[filter] filter failure! msg: " + e.getMessage(), e);
             Response defaultResponseInstance = getDefaultResponseInstance(handlerClazz);
             defaultResponseInstance.setErrorInfo(NacosException.SERVER_ERROR, ExceptionUtil.getAllExceptionMsg(e));
             return defaultResponseInstance;
         }
         if (Loggers.AUTH.isDebugEnabled()) {
-            Loggers.AUTH.debug("access denied, request: {}", request.getClass().getSimpleName());
+            Loggers.AUTH.debug("[filter] access denied, request: {}", request.getClass().getSimpleName());
         }
         Response defaultResponseInstance = getDefaultResponseInstance(handlerClazz);
         defaultResponseInstance.setErrorInfo(NacosException.NO_RIGHT, "access denied, [admission]");
@@ -100,7 +105,7 @@ public class AdmissionControlFilter extends AbstractRequestFilter implements Fil
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (!authConfigs.isAuthEnabled()) {
+        if (unnecessaryFilter()) {
             chain.doFilter(request, response);
             return;
         }
@@ -121,11 +126,12 @@ public class AdmissionControlFilter extends AbstractRequestFilter implements Fil
                 headerMapBuilder.put(headerName, req.getHeader(headerName));
             }
             admissionInfo.setHeaderMap(headerMapBuilder.build());
-            if (filter(admissionInfo)) {
+            if (admissionFilter(admissionInfo)) {
                 chain.doFilter(request, response);
                 return;
             }
         } catch (Exception e) {
+            Loggers.AUTH.error("[filter] filter failure! msg: " + e.getMessage(), e);
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server failed," + e.getMessage());
             return;
         }
@@ -135,8 +141,12 @@ public class AdmissionControlFilter extends AbstractRequestFilter implements Fil
         resp.sendError(HttpServletResponse.SC_FORBIDDEN, "access denied, [admission]");
     }
 
-    private boolean filter(AdmissionInfo admissionInfo) {
+    private boolean admissionFilter(AdmissionInfo admissionInfo) {
         return admissionControls.stream().allMatch(ac -> ac.access(admissionInfo));
+    }
+
+    private boolean unnecessaryFilter() {
+        return !authConfigs.isAuthEnabled() || admissionControls.isEmpty();
     }
 
     private AdmissionInfo createAdmissionInfoFromMethod(Object request, Method method) {

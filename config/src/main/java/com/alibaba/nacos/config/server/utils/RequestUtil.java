@@ -74,6 +74,14 @@ public class RequestUtil {
     }
 
     /**
+     * get the user of the client application in the Attribute.
+     * @return may be return null
+     */
+    public static User getUser() {
+        return getUser(getRequest());
+    }
+
+    /**
      * get request.
      * @return request
      */
@@ -81,14 +89,6 @@ public class RequestUtil {
         return ((ServletRequestAttributes) (RequestContextHolder.currentRequestAttributes())).getRequest();
     }
 
-    /**
-     * get the user of the client application in the Attribute.
-     * @return may be return null
-     */
-    public static User getUser() {
-        return getUser(getRequest());
-    }
-    
     /**
      * Gets the username of the client application in the Attribute.
      *

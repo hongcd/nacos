@@ -92,7 +92,6 @@ public class NacosAuthManager implements AuthManager {
     @Autowired
     private PersistService persistService;
 
-
     private LoadingCache<ConfigKey, Optional<String>> configAppNameCache;
 
     @PostConstruct

@@ -26,6 +26,7 @@ import com.alibaba.nacos.common.utils.ReflectUtils;
 import com.alibaba.nacos.common.utils.NamespaceUtil;
 import com.alibaba.nacos.naming.constants.FieldsConstants;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -35,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author nkorange
  * @since 1.2.0
  */
+@Component
 public class NamingResourceParser implements ResourceParser {
     
     private static final String AUTH_NAMING_PREFIX = "naming/";

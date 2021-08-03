@@ -2275,17 +2275,17 @@ public class EmbeddedStoragePersistServiceImpl implements PersistService {
     }
 
     @Override
+    public TenantInfo findTenantByKp(String kp, String tenantId) {
+        String sql = "SELECT tenant_id,tenant_name,tenant_desc,kp FROM tenant_info WHERE kp=? AND tenant_id=?";
+        return databaseOperate.queryOne(sql, new Object[] {kp, tenantId}, TENANT_INFO_ROW_MAPPER);
+
+    }
+
+    @Override
     public List<TenantInfo> findTenantByKps(List<String> kps) {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public TenantInfo findTenantByKp(String kp, String tenantId) {
-        String sql = "SELECT tenant_id,tenant_name,tenant_desc,kp FROM tenant_info WHERE kp=? AND tenant_id=?";
-        return databaseOperate.queryOne(sql, new Object[] {kp, tenantId}, TENANT_INFO_ROW_MAPPER);
-        
-    }
-    
     @Override
     public void removeTenantInfoAtomic(final String kp, final String tenantId) {
         EmbeddedStorageContextUtils.addSqlContext("DELETE FROM tenant_info WHERE kp=? AND tenant_id=?", kp, tenantId);

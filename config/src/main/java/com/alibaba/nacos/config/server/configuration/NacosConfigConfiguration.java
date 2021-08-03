@@ -16,14 +16,17 @@
 
 package com.alibaba.nacos.config.server.configuration;
 
-import com.alibaba.nacos.config.server.auth.IpAdmissionControl;
-import com.alibaba.nacos.config.server.filter.NacosWebFilter;
 import com.alibaba.nacos.config.server.filter.CurcuitFilter;
+import com.alibaba.nacos.config.server.filter.NacosWebFilter;
 import com.alibaba.nacos.config.server.remote.ConfigQueryRequestHandler;
+import com.alibaba.nacos.config.server.service.ConfigAppAuthConfigSelector;
+import com.alibaba.nacos.config.server.service.ConfigNamespaceAuthConfigSelector;
 import com.alibaba.nacos.config.server.service.NacosAuthNamespaceCreateRunner;
 import com.alibaba.nacos.config.server.service.repository.PersistService;
-import com.alibaba.nacos.core.admission.AdmissionControl;
+import com.alibaba.nacos.core.selector.AppAuthConfigSelector;
+import com.alibaba.nacos.core.selector.NamespaceAuthConfigSelector;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -71,15 +74,34 @@ public class NacosConfigConfiguration {
         return new CurcuitFilter();
     }
 
-    @Bean
-    @ConditionalOnProperty(name = "mtc.nacos.core.auth.namespace.id")
-    public ApplicationRunner nacosAuthNamespaceCreateRunner(PersistService persistService) {
-        return new NacosAuthNamespaceCreateRunner(persistService);
-    }
+    @Configuration
+    @ConditionalOnProperty(name = "hx.nacos.core.auth.namespace.id")
+    static class NacosConfigAuthConfiguration {
 
-    @Bean
-    @ConditionalOnProperty(name = "mtc.nacos.core.auth.namespace.id")
-    public AdmissionControl ipAdmissionControl(ConfigQueryRequestHandler configQueryRequestHandler) {
-        return new IpAdmissionControl(configQueryRequestHandler);
+        private final ConfigQueryRequestHandler configQueryRequestHandler;
+
+        private final PersistService persistService;
+
+        public NacosConfigAuthConfiguration(ConfigQueryRequestHandler configQueryRequestHandler, PersistService persistService) {
+            this.configQueryRequestHandler = configQueryRequestHandler;
+            this.persistService = persistService;
+        }
+
+        @Bean
+        ApplicationRunner nacosAuthNamespaceCreateRunner() {
+            return new NacosAuthNamespaceCreateRunner(persistService);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean(NamespaceAuthConfigSelector.class)
+        AppAuthConfigSelector configAppAuthConfigSelector() {
+            return new ConfigAppAuthConfigSelector(configQueryRequestHandler, persistService);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean(NamespaceAuthConfigSelector.class)
+        NamespaceAuthConfigSelector configNamespaceAuthConfigSelector() {
+            return new ConfigNamespaceAuthConfigSelector(configQueryRequestHandler);
+        }
     }
 }

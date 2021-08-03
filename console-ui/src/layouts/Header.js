@@ -83,7 +83,7 @@ class Header extends React.Component {
       language = 'en-us',
       location: { pathname },
     } = this.props;
-    const { home, docs, blog, community, languageSwitchButton, mtcWiki } = locale;
+    const { home, docs, blog, community, languageSwitchButton, hxWiki } = locale;
     const { passwordResetUser = '' } = this.state;
     const BASE_URL = `https://nacos.io/${language.toLocaleLowerCase()}/`;
     const NAV_MENU = [
@@ -93,7 +93,7 @@ class Header extends React.Component {
       { id: 4, title: community, link: `${BASE_URL}community/index.html` },
       {
         id: 5,
-        title: mtcWiki,
+        title: hxWiki,
         link: 'http://wiki.heisea.cn/pages/viewpage.action?pageId=35319180',
       },
     ];

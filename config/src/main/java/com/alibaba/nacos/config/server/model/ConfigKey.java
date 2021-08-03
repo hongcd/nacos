@@ -91,7 +91,9 @@ public class ConfigKey implements Serializable {
             return false;
         }
         ConfigKey configKey = (ConfigKey) o;
-        return Objects.equals(appName, configKey.appName) && dataId.equals(configKey.dataId) && group.equals(configKey.group) && tenant.equals(configKey.tenant);
+        return Objects.equals(appName, configKey.appName)
+                && dataId.equals(configKey.dataId)
+                && group.equals(configKey.group) && tenant.equals(configKey.tenant);
     }
 
     @Override

@@ -38,7 +38,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -132,6 +135,12 @@ public class NacosUserDetailsServiceImpl implements UserDetailsService {
         userPersistService.updateUserPassword(username, password);
     }
 
+    /**
+     * update user.
+     * @param username username.
+     * @param password password.
+     * @param kps kps.
+     */
     public void updateUser(String username, String password, List<String> kps) {
         if (StringUtils.isBlank(username)) {
             return;
