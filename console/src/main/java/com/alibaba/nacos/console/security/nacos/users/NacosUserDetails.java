@@ -16,24 +16,25 @@
 
 package com.alibaba.nacos.console.security.nacos.users;
 
-import com.alibaba.nacos.config.server.model.User;
+import com.alibaba.nacos.config.server.model.DetailsUser;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.function.Supplier;
 
 /**
  * custom user.
  *
  * @author wfnuser
  */
-public class NacosUserDetails implements UserDetails {
+public class NacosUserDetails implements UserDetails, Supplier<DetailsUser> {
     
-    private final User user;
+    private final DetailsUser detailsUser;
     
-    public NacosUserDetails(User user) {
-        this.user = user;
+    public NacosUserDetails(DetailsUser detailsUser) {
+        this.detailsUser = detailsUser;
     }
     
     @Override
@@ -44,12 +45,12 @@ public class NacosUserDetails implements UserDetails {
     
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return detailsUser.getPassword();
     }
     
     @Override
     public String getUsername() {
-        return user.getUsername();
+        return detailsUser.getUsername();
     }
     
     @Override
@@ -70,5 +71,10 @@ public class NacosUserDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public DetailsUser get() {
+        return detailsUser;
     }
 }

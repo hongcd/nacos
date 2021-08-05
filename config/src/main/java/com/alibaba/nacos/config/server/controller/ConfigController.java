@@ -20,6 +20,7 @@ import com.alibaba.nacos.api.config.ConfigType;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.auth.annotation.Secured;
 import com.alibaba.nacos.auth.common.ActionTypes;
+import com.alibaba.nacos.auth.model.User;
 import com.alibaba.nacos.common.model.RestResult;
 import com.alibaba.nacos.common.model.RestResultUtils;
 import com.alibaba.nacos.common.utils.MapUtil;
@@ -28,6 +29,7 @@ import com.alibaba.nacos.config.server.auth.ConfigResourceParser;
 import com.alibaba.nacos.config.server.constant.Constants;
 import com.alibaba.nacos.config.server.controller.parameters.SameNamespaceCloneConfigBean;
 import com.alibaba.nacos.config.server.model.ConfigAdvanceInfo;
+import com.alibaba.nacos.config.server.model.DetailsUser;
 import com.alibaba.nacos.config.server.model.ConfigAllInfo;
 import com.alibaba.nacos.config.server.model.ConfigInfo;
 import com.alibaba.nacos.config.server.model.ConfigInfo4Beta;
@@ -50,7 +52,9 @@ import com.alibaba.nacos.config.server.utils.RequestUtil;
 import com.alibaba.nacos.config.server.utils.TimeUtils;
 import com.alibaba.nacos.config.server.utils.YamlParserUtil;
 import com.alibaba.nacos.config.server.utils.ZipUtils;
+import com.alibaba.nacos.core.model.AppPermission;
 import com.alibaba.nacos.sys.utils.InetUtils;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
@@ -59,6 +63,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -83,7 +89,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import static com.alibaba.nacos.api.common.Constants.ALL_PATTERN;
+import static com.alibaba.nacos.config.server.constant.Constants.DEFAULT_ADMIN_USER_NAME;
 
 /**
  * Special controller for soft load client to publish data.
@@ -110,6 +121,9 @@ public class ConfigController {
     
     @Autowired
     private ConfigSubService configSubService;
+
+    @Autowired
+    private UserDetailsService userDetailsService;
     
     /**
      * Adds or updates non-aggregated data.
@@ -352,7 +366,13 @@ public class ConfigController {
             @RequestParam(value = "tenant", required = false, defaultValue = StringUtils.EMPTY) String tenant,
             @RequestParam(value = "config_tags", required = false) String configTags,
             @RequestParam("pageNo") int pageNo, @RequestParam("pageSize") int pageSize) {
+
+        Optional<List<String>> userApps = getUserApps(ActionTypes.READ.toString());
+        if (!userApps.isPresent()) {
+            return new Page<>();
+        }
         Map<String, Object> configAdvanceInfo = new HashMap<String, Object>(100);
+        configAdvanceInfo.put("user_apps", userApps.get());
         if (StringUtils.isNotBlank(appName)) {
             configAdvanceInfo.put("appName", appName);
         }
@@ -367,6 +387,36 @@ public class ConfigController {
             throw new RuntimeException(errorMsg, e);
         }
     }
+
+    private Optional<List<String>> getUserApps(String action) {
+        User requestUser = RequestUtil.getUser();
+        if (requestUser == null) {
+            return Optional.empty();
+        }
+        if (DEFAULT_ADMIN_USER_NAME.equals(requestUser.getUsername())) {
+            return Optional.of(Collections.emptyList());
+        }
+        UserDetails userDetails = userDetailsService.loadUserByUsername(requestUser.getUsername());
+        if (!(userDetails instanceof Supplier)) {
+            return Optional.empty();
+        }
+        Object user = ((Supplier<?>) userDetails).get();
+        if (!(user instanceof DetailsUser)) {
+            return Optional.empty();
+        }
+        List<AppPermission> appPermissions = ((DetailsUser) user).getAppPermissions();
+        List<String> userApps = Lists.newArrayList();
+        for (AppPermission appPermission : appPermissions) {
+            if (!appPermission.getAction().contains(action)) {
+                continue;
+            }
+            if (ALL_PATTERN.equals(appPermission.getAppName())) {
+                return Optional.of(Collections.emptyList());
+            }
+            userApps.add(appPermission.getAppName());
+        }
+        return Optional.of(userApps).filter(list -> !list.isEmpty());
+    }
     
     /**
      * Fuzzy query configuration information. Fuzzy queries based only on content are not allowed, that is, both dataId
@@ -379,13 +429,19 @@ public class ConfigController {
             @RequestParam(value = "tenant", required = false, defaultValue = StringUtils.EMPTY) String tenant,
             @RequestParam(value = "config_tags", required = false) String configTags,
             @RequestParam("pageNo") int pageNo, @RequestParam("pageSize") int pageSize) {
-        Map<String, Object> configAdvanceInfo = new HashMap<String, Object>(50);
+
+        Map<String, Object> configAdvanceInfo = new HashMap<>(100);
+        Optional<List<String>> userApps = getUserApps(ActionTypes.READ.toString());
+        if (!userApps.isPresent()) {
+            return new Page<>();
+        }
         if (StringUtils.isNotBlank(appName)) {
             configAdvanceInfo.put("appName", appName);
         }
         if (StringUtils.isNotBlank(configTags)) {
             configAdvanceInfo.put("config_tags", configTags);
         }
+        configAdvanceInfo.put("user_apps", userApps.get());
         try {
             return persistService.findConfigInfoLike4Page(pageNo, pageSize, dataId, group, tenant, configAdvanceInfo);
         } catch (Exception e) {

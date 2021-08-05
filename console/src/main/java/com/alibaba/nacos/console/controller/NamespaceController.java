@@ -26,6 +26,7 @@ import com.alibaba.nacos.common.model.RestResult;
 import com.alibaba.nacos.common.model.RestResultUtils;
 import com.alibaba.nacos.config.server.auth.UserPersistService;
 import com.alibaba.nacos.config.server.constant.Constants;
+import com.alibaba.nacos.config.server.model.DetailsUser;
 import com.alibaba.nacos.config.server.model.TenantInfo;
 import com.alibaba.nacos.config.server.service.repository.PersistService;
 import com.alibaba.nacos.config.server.utils.RequestUtil;
@@ -109,7 +110,7 @@ public class NamespaceController {
             return DEFAULT_KP;
         } else if (!DEFAULT_KP.equals(kp)) {
             User user = RequestUtil.getUser();
-            if (user != null && !Constants.DEFAULT_ADMIN_USER_NAME.equals(user.getUserName())) {
+            if (user != null && !Constants.DEFAULT_ADMIN_USER_NAME.equals(user.getUsername())) {
                 throw new IllegalArgumentException("invalid kp: " + kp);
             }
         }
@@ -129,11 +130,11 @@ public class NamespaceController {
         Namespace namespace0 = new Namespace("", DEFAULT_NAMESPACE, DEFAULT_QUOTA, persistService.configInfoCount(DEFAULT_TENANT),
                 NamespaceTypeEnum.GLOBAL.getType(), DEFAULT_KP);
         User user = authManager.unionLogin(request);
-        String userName = user.getUserName();
+        String userName = user.getUsername();
 
         // TODO 这里应该查看用户拥有的kps
-        com.alibaba.nacos.config.server.model.User persistUser = userPersistService.findUserByUsername(userName);
-        StringTokenizer st = new StringTokenizer(persistUser.getKps(), COMMA);
+        DetailsUser persistDetailsUser = userPersistService.findUserByUsername(userName);
+        StringTokenizer st = new StringTokenizer(persistDetailsUser.getKps(), COMMA);
         List<String> kps = Lists.newArrayList();
         while (st.hasMoreTokens()) {
             kps.add(st.nextToken());

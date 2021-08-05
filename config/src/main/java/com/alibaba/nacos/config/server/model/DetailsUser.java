@@ -16,28 +16,23 @@
 
 package com.alibaba.nacos.config.server.model;
 
-import com.alibaba.nacos.core.model.AppPermission;
+import com.alibaba.nacos.core.model.BaseUser;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * User.
  *
  * @author wfnuser
  */
-public class User implements Serializable {
+public class DetailsUser extends BaseUser implements Serializable {
     
     private static final long serialVersionUID = 3371769277802700069L;
-    
-    private String username;
     
     private String password;
 
     private String kps;
 
-    private List<AppPermission> appPermissions;
-    
     public String getPassword() {
         return password;
     }
@@ -46,27 +41,11 @@ public class User implements Serializable {
         this.password = password;
     }
     
-    public String getUsername() {
-        return username;
-    }
-    
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getKps() {
         return kps;
     }
 
     public void setKps(String kps) {
         this.kps = kps;
-    }
-
-    public List<AppPermission> getAppPermissions() {
-        return appPermissions;
-    }
-
-    public void setAppPermissions(List<AppPermission> appPermissions) {
-        this.appPermissions = appPermissions;
     }
 }

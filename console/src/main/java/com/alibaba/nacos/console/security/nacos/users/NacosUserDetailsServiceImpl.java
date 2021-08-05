@@ -21,8 +21,8 @@ import com.alibaba.nacos.auth.common.AuthConfigs;
 import com.alibaba.nacos.config.server.auth.PermissionPersistService;
 import com.alibaba.nacos.config.server.auth.UserAppPermission;
 import com.alibaba.nacos.config.server.auth.UserPersistService;
+import com.alibaba.nacos.config.server.model.DetailsUser;
 import com.alibaba.nacos.config.server.model.Page;
-import com.alibaba.nacos.config.server.model.User;
 import com.alibaba.nacos.console.utils.PasswordEncoderUtil;
 import com.alibaba.nacos.core.model.AppAuthConfig;
 import com.alibaba.nacos.core.selector.AppAuthConfigSelector;
@@ -57,7 +57,7 @@ import static com.alibaba.nacos.api.common.Constants.COMMA;
 @Service
 public class NacosUserDetailsServiceImpl implements UserDetailsService {
     
-    private Map<String, User> userMap = new ConcurrentHashMap<>();
+    private Map<String, DetailsUser> userMap = new ConcurrentHashMap<>();
     
     @Autowired
     private UserPersistService userPersistService;
@@ -71,15 +71,15 @@ public class NacosUserDetailsServiceImpl implements UserDetailsService {
     @Autowired
     private AppAuthConfigSelector appAuthConfigSelector;
 
-    private void reloadFromAppAuthConfig(Map<String, User> userMap) throws NacosException {
+    private void reloadFromAppAuthConfig(Map<String, DetailsUser> userMap) throws NacosException {
         List<AppAuthConfig> appAuthConfigs = appAuthConfigSelector.selectAll();
         for (AppAuthConfig appAuthConfig : appAuthConfigs) {
             Map<String, AppEnv> envs = appAuthConfig.getEnvs();
             envs.forEach((envName, appEnv) -> {
-                User appUser = new User();
-                appUser.setUsername(appAuthConfig.getAppName() + COLON + envName);
-                appUser.setAppPermissions(appAuthConfig.getAppPermissions());
-                userMap.put(appUser.getUsername(), appUser);
+                DetailsUser appDetailsUser = new DetailsUser();
+                appDetailsUser.setUsername(appAuthConfig.getAppName() + COLON + envName);
+                appDetailsUser.setAppPermissions(appAuthConfig.getAppPermissions());
+                userMap.put(appDetailsUser.getUsername(), appDetailsUser);
             });
         }
     }
@@ -87,9 +87,9 @@ public class NacosUserDetailsServiceImpl implements UserDetailsService {
     @Scheduled(initialDelay = 5000, fixedDelay = 30000)
     private void reload() {
         try {
-            Map<String, User> map = new ConcurrentHashMap<>(16);
+            Map<String, DetailsUser> map = new ConcurrentHashMap<>(16);
             reloadFromAppAuthConfig(map);
-            Page<User> users = getUsersFromDatabase(1, Integer.MAX_VALUE);
+            Page<DetailsUser> users = getUsersFromDatabase(1, Integer.MAX_VALUE);
             if (users == null) {
                 if (!map.isEmpty()) {
                     userMap = map;
@@ -101,9 +101,9 @@ public class NacosUserDetailsServiceImpl implements UserDetailsService {
                     .collect(Collectors.groupingBy(UserAppPermission::getUsername, Collectors
                             .mapping(p -> new AppPermission(p.getApp(), p.getAction()), Collectors.toList())));
 
-            for (User user : users.getPageItems()) {
-                user.setAppPermissions(permissionMap.getOrDefault(user.getUsername(), Collections.emptyList()));
-                map.put(user.getUsername(), user);
+            for (DetailsUser detailsUser : users.getPageItems()) {
+                detailsUser.setAppPermissions(permissionMap.getOrDefault(detailsUser.getUsername(), Collections.emptyList()));
+                map.put(detailsUser.getUsername(), detailsUser);
             }
             userMap = map;
         } catch (Exception e) {
@@ -114,15 +114,15 @@ public class NacosUserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         
-        User user = userMap.get(username);
+        DetailsUser detailsUser = userMap.get(username);
         if (!authConfigs.isCachingEnabled()) {
-            user = getUserFromDatabase(username);
+            detailsUser = getUserFromDatabase(username);
         }
         
-        if (user == null) {
+        if (detailsUser == null) {
             throw new UsernameNotFoundException(username);
         }
-        return new NacosUserDetails(user);
+        return new NacosUserDetails(detailsUser);
     }
 
     private List<AppPermission> getUserAppPermissions(String username) {
@@ -157,24 +157,24 @@ public class NacosUserDetailsServiceImpl implements UserDetailsService {
         userPersistService.updateKps(username, sj.toString());
     }
     
-    public Page<User> getUsersFromDatabase(int pageNo, int pageSize) {
+    public Page<DetailsUser> getUsersFromDatabase(int pageNo, int pageSize) {
         return userPersistService.getUsers(pageNo, pageSize);
     }
     
-    public User getUser(String username) {
-        User user = userMap.get(username);
+    public DetailsUser getUser(String username) {
+        DetailsUser detailsUser = userMap.get(username);
         if (!authConfigs.isCachingEnabled()) {
-            user = getUserFromDatabase(username);
+            detailsUser = getUserFromDatabase(username);
         }
-        return user;
+        return detailsUser;
     }
     
-    public User getUserFromDatabase(String username) {
-        User user = userPersistService.findUserByUsername(username);
-        if (user != null) {
-            user.setAppPermissions(getUserAppPermissions(username));
+    public DetailsUser getUserFromDatabase(String username) {
+        DetailsUser detailsUser = userPersistService.findUserByUsername(username);
+        if (detailsUser != null) {
+            detailsUser.setAppPermissions(getUserAppPermissions(username));
         }
-        return user;
+        return detailsUser;
     }
 
     public List<String> findUserLikeUsername(String username) {

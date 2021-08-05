@@ -18,7 +18,7 @@ package com.alibaba.nacos.console.security.nacos;
 
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.alibaba.nacos.config.server.auth.RoleInfo;
-import com.alibaba.nacos.config.server.model.User;
+import com.alibaba.nacos.config.server.model.DetailsUser;
 import com.alibaba.nacos.console.security.nacos.roles.NacosRoleServiceImpl;
 import com.alibaba.nacos.console.security.nacos.users.NacosUserDetails;
 import com.alibaba.nacos.console.security.nacos.users.NacosUserDetailsServiceImpl;
@@ -105,11 +105,11 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
         } catch (UsernameNotFoundException exception) {
             String nacosPassword = PasswordEncoderUtil.encode(DEFAULT_PASSWORD);
             userDetailsService.createUser(LDAP_PREFIX + username, nacosPassword);
-            User user = new User();
-            user.setUsername(LDAP_PREFIX + username);
-            user.setPassword(nacosPassword);
-            user.setKps(DEFAULT_KP);
-            userDetails = new NacosUserDetails(user);
+            DetailsUser detailsUser = new DetailsUser();
+            detailsUser.setUsername(LDAP_PREFIX + username);
+            detailsUser.setPassword(nacosPassword);
+            detailsUser.setKps(DEFAULT_KP);
+            userDetails = new NacosUserDetails(detailsUser);
         }
         return new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
     }

@@ -17,8 +17,8 @@
 package com.alibaba.nacos.config.server.auth;
 
 import com.alibaba.nacos.config.server.configuration.ConditionOnExternalStorage;
+import com.alibaba.nacos.config.server.model.DetailsUser;
 import com.alibaba.nacos.config.server.model.Page;
-import com.alibaba.nacos.config.server.model.User;
 import com.alibaba.nacos.config.server.service.repository.PaginationHelper;
 import com.alibaba.nacos.config.server.service.repository.extrnal.ExternalStoragePersistServiceImpl;
 import com.alibaba.nacos.config.server.utils.LogUtil;
@@ -132,7 +132,7 @@ public class ExternalUserPersistServiceImpl implements UserPersistService {
      * @return User model.
      */
     @Override
-    public User findUserByUsername(String username) {
+    public DetailsUser findUserByUsername(String username) {
         String sql = "SELECT username,password, kps FROM users WHERE username=? ";
         try {
             return this.jt.queryForObject(sql, new Object[] {username}, USER_ROW_MAPPER);
@@ -148,9 +148,9 @@ public class ExternalUserPersistServiceImpl implements UserPersistService {
     }
     
     @Override
-    public Page<User> getUsers(int pageNo, int pageSize) {
+    public Page<DetailsUser> getUsers(int pageNo, int pageSize) {
         
-        PaginationHelper<User> helper = persistService.createPaginationHelper();
+        PaginationHelper<DetailsUser> helper = persistService.createPaginationHelper();
         
         String sqlCountRows = "select count(*) from users where ";
         String sqlFetchRows = "select username,password, kps from users where ";
@@ -158,7 +158,7 @@ public class ExternalUserPersistServiceImpl implements UserPersistService {
         String where = " 1=1 ";
         
         try {
-            Page<User> pageInfo = helper
+            Page<DetailsUser> pageInfo = helper
                     .fetchPage(sqlCountRows + where, sqlFetchRows + where, new ArrayList<String>().toArray(), pageNo,
                             pageSize, USER_ROW_MAPPER);
             if (pageInfo == null) {

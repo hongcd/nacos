@@ -60,7 +60,7 @@ public class UserControllerTest {
     public void setUp() throws Exception {
         userController = new UserController();
         user = new NacosUser();
-        user.setUserName("nacos");
+        user.setUsername("nacos");
         user.setGlobalAdmin(true);
         user.setToken("1234567890");
         injectObject("authConfigs", authConfigs);

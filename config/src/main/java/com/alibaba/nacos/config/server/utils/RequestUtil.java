@@ -98,7 +98,7 @@ public class RequestUtil {
     public static String getSrcUserName(HttpServletRequest request) {
         User user = getUser(request);
         // If auth is disabled, get username from parameters by agreed key
-        return user == null ? request.getParameter(Constants.USERNAME) : user.getUserName();
+        return user == null ? request.getParameter(Constants.USERNAME) : user.getUsername();
     }
     
 }

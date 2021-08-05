@@ -19,6 +19,8 @@ package com.alibaba.nacos.core.admission.basic;
 import com.alibaba.nacos.api.utils.NetUtils;
 import com.alibaba.nacos.core.admission.AdmissionControl;
 import com.alibaba.nacos.core.admission.AdmissionInfo;
+import com.alibaba.nacos.core.cluster.Member;
+import com.alibaba.nacos.core.cluster.ServerMemberManager;
 import com.alibaba.nacos.core.model.NamespaceAuthConfig;
 import com.alibaba.nacos.core.selector.NamespaceAuthConfigSelector;
 import com.alibaba.nacos.sys.env.EnvUtil;
@@ -26,15 +28,11 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Sets;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.web.util.matcher.IpAddressMatcher;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
-import static com.alibaba.nacos.api.common.Constants.COLON;
 
 /**
  * IP admission control.
@@ -50,15 +48,11 @@ public class IpAdmissionControl implements AdmissionControl {
 
     private final LoadingCache<String, IpAddressMatcher> ipAddressMatcherCache;
 
-    public IpAdmissionControl(NamespaceAuthConfigSelector namespaceAuthConfigSelector) {
+    public IpAdmissionControl(ServerMemberManager serverMemberManager, NamespaceAuthConfigSelector namespaceAuthConfigSelector) {
         this.namespaceAuthConfigSelector = namespaceAuthConfigSelector;
-        this.globalWhiteIps = Sets.newHashSet("127.0.0.1", "localhost", "0:0:0:0:0:0:0:1", NetUtils.localIP());
-        try {
-            EnvUtil.readClusterConf().stream()
-                    .map(address -> StringUtils.substringBefore(address, COLON))
-                    .forEach(globalWhiteIps::add);
-        } catch (IOException ignore) {
-            // nothing
+        this.globalWhiteIps = Sets.newHashSet("127.0.0.1", "localhost", "0:0:0:0:0:0:0:1");
+        for (Member member : serverMemberManager.allMembers()) {
+            globalWhiteIps.add(member.getIp());
         }
         ipAddressMatcherCache = CacheBuilder.newBuilder()
                 .concurrencyLevel(EnvUtil.getAvailableProcessors())

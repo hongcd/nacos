@@ -33,7 +33,7 @@ public class AddressServerAuthManager implements AuthManager {
     @Override
     public User login(Object request) throws AccessException {
         User result = new User();
-        result.setUserName("nacos");
+        result.setUsername("nacos");
         return result;
     }
     

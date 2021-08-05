@@ -18,7 +18,7 @@ package com.alibaba.nacos.config.server.auth;
 
 import com.alibaba.nacos.config.server.configuration.ConditionOnEmbeddedStorage;
 import com.alibaba.nacos.config.server.model.Page;
-import com.alibaba.nacos.config.server.model.User;
+import com.alibaba.nacos.config.server.model.DetailsUser;
 import com.alibaba.nacos.config.server.service.repository.embedded.EmbeddedStoragePersistServiceImpl;
 import com.alibaba.nacos.config.server.service.repository.PaginationHelper;
 import com.alibaba.nacos.config.server.service.repository.embedded.DatabaseOperate;
@@ -109,21 +109,21 @@ public class EmbeddedUserPersistServiceImpl implements UserPersistService {
     }
 
     @Override
-    public User findUserByUsername(String username) {
+    public DetailsUser findUserByUsername(String username) {
         String sql = "SELECT username,password,kps FROM users WHERE username=? ";
         return databaseOperate.queryOne(sql, new Object[] {username}, USER_ROW_MAPPER);
     }
     
     @Override
-    public Page<User> getUsers(int pageNo, int pageSize) {
+    public Page<DetailsUser> getUsers(int pageNo, int pageSize) {
         
-        PaginationHelper<User> helper = persistService.createPaginationHelper();
+        PaginationHelper<DetailsUser> helper = persistService.createPaginationHelper();
         
         String sqlCountRows = "select count(*) from users where ";
         String sqlFetchRows = "select username,password,kps from users where ";
         
         String where = " 1=1 ";
-        Page<User> pageInfo = helper
+        Page<DetailsUser> pageInfo = helper
                 .fetchPage(sqlCountRows + where, sqlFetchRows + where, new ArrayList<String>().toArray(), pageNo,
                         pageSize, USER_ROW_MAPPER);
         if (pageInfo == null) {

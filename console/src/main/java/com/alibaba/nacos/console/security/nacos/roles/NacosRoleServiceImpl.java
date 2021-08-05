@@ -254,7 +254,7 @@ public class NacosRoleServiceImpl {
             throw new IllegalArgumentException("user '" + username + "' not found!");
         }
         User currentUser = RequestUtil.getUser();
-        if (GLOBAL_ADMIN_ROLE.equals(role) && !DEFAULT_ADMIN_USER_NAME.equals(currentUser.getUserName())) {
+        if (GLOBAL_ADMIN_ROLE.equals(role) && !DEFAULT_ADMIN_USER_NAME.equals(currentUser.getUsername())) {
             throw new IllegalArgumentException("role '" + GLOBAL_ADMIN_ROLE + "' is not permitted to create!");
         }
         rolePersistService.addRole(role, username);

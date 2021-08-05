@@ -17,8 +17,8 @@ package com.alibaba.nacos.test.core.auth;
 
 import com.alibaba.nacos.Nacos;
 import com.alibaba.nacos.common.utils.JacksonUtils;
+import com.alibaba.nacos.config.server.model.DetailsUser;
 import com.alibaba.nacos.config.server.model.Page;
-import com.alibaba.nacos.config.server.model.User;
 import com.alibaba.nacos.console.utils.PasswordEncoderUtil;
 import com.alibaba.nacos.test.base.HttpClient4Test;
 import com.alibaba.nacos.test.base.Params;
@@ -138,16 +138,16 @@ public class User_ITCase extends HttpClient4Test {
 
         Assert.assertTrue(response.getStatusCode().is2xxSuccessful());
 
-        Page<User> userPage = JacksonUtils.toObj(response.getBody(), new TypeReference<Page<User>>() {});
+        Page<DetailsUser> userPage = JacksonUtils.toObj(response.getBody(), new TypeReference<Page<DetailsUser>>() {});
 
         Assert.assertNotNull(userPage);
         Assert.assertNotNull(userPage.getPageItems());
         Assert.assertTrue(userPage.getPageItems().size() > 0);
 
         boolean found = false;
-        for (User user : userPage.getPageItems()) {
-            if ("username1".equals(user.getUsername()) &&
-                PasswordEncoderUtil.matches("password1", user.getPassword())) {
+        for (DetailsUser detailsUser : userPage.getPageItems()) {
+            if ("username1".equals(detailsUser.getUsername()) &&
+                PasswordEncoderUtil.matches("password1", detailsUser.getPassword())) {
                 found = true;
                 break;
             }
@@ -175,16 +175,16 @@ public class User_ITCase extends HttpClient4Test {
                 .done(),
             String.class);
 
-        userPage = JacksonUtils.toObj(response.getBody(), new TypeReference<Page<User>>() {});
+        userPage = JacksonUtils.toObj(response.getBody(), new TypeReference<Page<DetailsUser>>() {});
 
         Assert.assertNotNull(userPage);
         Assert.assertNotNull(userPage.getPageItems());
         Assert.assertTrue(userPage.getPageItems().size() > 0);
 
         found = false;
-        for (User user : userPage.getPageItems()) {
-            if ("username1".equals(user.getUsername()) &&
-                PasswordEncoderUtil.matches("password2", user.getPassword())) {
+        for (DetailsUser detailsUser : userPage.getPageItems()) {
+            if ("username1".equals(detailsUser.getUsername()) &&
+                PasswordEncoderUtil.matches("password2", detailsUser.getPassword())) {
                 found = true;
                 break;
             }
@@ -213,15 +213,15 @@ public class User_ITCase extends HttpClient4Test {
 
         Assert.assertTrue(response.getStatusCode().is2xxSuccessful());
 
-        userPage = JacksonUtils.toObj(response.getBody(), new TypeReference<Page<User>>() {});
+        userPage = JacksonUtils.toObj(response.getBody(), new TypeReference<Page<DetailsUser>>() {});
 
         Assert.assertNotNull(userPage);
         Assert.assertNotNull(userPage.getPageItems());
         Assert.assertTrue(userPage.getPageItems().size() > 0);
 
         found = false;
-        for (User user : userPage.getPageItems()) {
-            if ("username1".equals(user.getUsername())) {
+        for (DetailsUser detailsUser : userPage.getPageItems()) {
+            if ("username1".equals(detailsUser.getUsername())) {
                 found = true;
                 break;
             }

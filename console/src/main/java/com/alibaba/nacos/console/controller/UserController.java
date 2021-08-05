@@ -27,7 +27,7 @@ import com.alibaba.nacos.common.model.RestResultUtils;
 import com.alibaba.nacos.common.utils.JacksonUtils;
 import com.alibaba.nacos.common.utils.Objects;
 import com.alibaba.nacos.config.server.auth.RoleInfo;
-import com.alibaba.nacos.config.server.model.User;
+import com.alibaba.nacos.config.server.model.DetailsUser;
 import com.alibaba.nacos.config.server.utils.RequestUtil;
 import com.alibaba.nacos.console.security.nacos.JwtTokenManager;
 import com.alibaba.nacos.console.security.nacos.NacosAuthConfig;
@@ -101,7 +101,7 @@ public class UserController {
         if (StringUtils.isNotBlank(kps)) {
             com.alibaba.nacos.auth.model.User user = Objects.requireNonNull(RequestUtil.getUser(request));
             StringTokenizer st = new StringTokenizer(kps, COMMA);
-            boolean isAdminUser = DEFAULT_ADMIN_USER_NAME.equals(user.getUserName());
+            boolean isAdminUser = DEFAULT_ADMIN_USER_NAME.equals(user.getUsername());
             while (st.hasMoreTokens()) {
                 String kp = st.nextToken();
                 if (!DEFAULT_KP.equals(kp) && !isAdminUser) {
@@ -130,8 +130,8 @@ public class UserController {
     @PostMapping
     public Object createUser(@RequestParam String username, @RequestParam String password) {
         
-        User user = userDetailsService.getUserFromDatabase(username);
-        if (user != null) {
+        DetailsUser detailsUser = userDetailsService.getUserFromDatabase(username);
+        if (detailsUser != null) {
             throw new IllegalArgumentException("user '" + username + "' already exist!");
         }
         userDetailsService.createUser(username, PasswordEncoderUtil.encode(password), getKps());
@@ -180,8 +180,8 @@ public class UserController {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "authorization failed!");
         }
 
-        User user = userDetailsService.getUserFromDatabase(username);
-        if (user == null) {
+        DetailsUser detailsUser = userDetailsService.getUserFromDatabase(username);
+        if (detailsUser == null) {
             throw new IllegalArgumentException("user " + username + " not exist!");
         }
         List<String> kps = Lists.newArrayList();
@@ -207,7 +207,7 @@ public class UserController {
             return true;
         }
         // same user
-        return user.getUserName().equals(username);
+        return user.getUsername().equals(username);
     }
     
     /**
@@ -250,7 +250,7 @@ public class UserController {
             result.put(Constants.ACCESS_TOKEN, user.getToken());
             result.put(Constants.TOKEN_TTL, authConfigs.getTokenValidityInSeconds());
             result.put(Constants.GLOBAL_ADMIN, user.isGlobalAdmin());
-            result.put(Constants.USERNAME, user.getUserName());
+            result.put(Constants.USERNAME, user.getUsername());
             return result;
         }
         
@@ -286,8 +286,8 @@ public class UserController {
             @RequestParam(value = "newPassword") String newPassword) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = ((UserDetails) principal).getUsername();
-        User user = userDetailsService.getUserFromDatabase(username);
-        String password = user.getPassword();
+        DetailsUser detailsUser = userDetailsService.getUserFromDatabase(username);
+        String password = detailsUser.getPassword();
         
         // TODO: throw out more fine grained exceptions
         try {

@@ -19,21 +19,8 @@ package com.alibaba.nacos.config.server.service.repository;
 import com.alibaba.nacos.config.server.auth.PermissionInfo;
 import com.alibaba.nacos.config.server.auth.RoleInfo;
 import com.alibaba.nacos.config.server.auth.UserAppPermission;
-import com.alibaba.nacos.config.server.model.ConfigAdvanceInfo;
-import com.alibaba.nacos.config.server.model.ConfigAllInfo;
-import com.alibaba.nacos.config.server.model.ConfigHistoryInfo;
-import com.alibaba.nacos.config.server.model.ConfigInfo;
-import com.alibaba.nacos.config.server.model.ConfigInfo4Beta;
-import com.alibaba.nacos.config.server.model.ConfigInfo4Tag;
-import com.alibaba.nacos.config.server.model.ConfigInfoAggr;
-import com.alibaba.nacos.config.server.model.ConfigInfoBase;
-import com.alibaba.nacos.config.server.model.ConfigInfoBetaWrapper;
-import com.alibaba.nacos.config.server.model.ConfigInfoChanged;
-import com.alibaba.nacos.config.server.model.ConfigInfoTagWrapper;
-import com.alibaba.nacos.config.server.model.ConfigInfoWrapper;
-import com.alibaba.nacos.config.server.model.ConfigKey;
-import com.alibaba.nacos.config.server.model.TenantInfo;
-import com.alibaba.nacos.config.server.model.User;
+import com.alibaba.nacos.config.server.model.*;
+import com.alibaba.nacos.config.server.model.DetailsUser;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -53,7 +40,7 @@ public final class RowMapperManager {
     
     public static final RowMapper<TenantInfo> TENANT_INFO_ROW_MAPPER = new TenantInfoRowMapper();
     
-    public static final RowMapper<User> USER_ROW_MAPPER = new UserRowMapper();
+    public static final RowMapper<DetailsUser> USER_ROW_MAPPER = new UserRowMapper();
     
     public static final RowMapper<ConfigInfoWrapper> CONFIG_INFO_WRAPPER_ROW_MAPPER = new ConfigInfoWrapperRowMapper();
     
@@ -546,15 +533,15 @@ public final class RowMapperManager {
         }
     }
     
-    public static final class UserRowMapper implements RowMapper<User> {
+    public static final class UserRowMapper implements RowMapper<DetailsUser> {
         
         @Override
-        public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-            User user = new User();
-            user.setUsername(rs.getString("username"));
-            user.setPassword(rs.getString("password"));
-            user.setKps(rs.getString("kps"));
-            return user;
+        public DetailsUser mapRow(ResultSet rs, int rowNum) throws SQLException {
+            DetailsUser detailsUser = new DetailsUser();
+            detailsUser.setUsername(rs.getString("username"));
+            detailsUser.setPassword(rs.getString("password"));
+            detailsUser.setKps(rs.getString("kps"));
+            return detailsUser;
         }
     }
     

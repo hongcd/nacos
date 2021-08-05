@@ -24,6 +24,7 @@ import com.alibaba.nacos.auth.model.Permission;
 import com.alibaba.nacos.auth.model.User;
 import com.alibaba.nacos.config.server.auth.RoleInfo;
 import com.alibaba.nacos.config.server.model.ConfigKey;
+import com.alibaba.nacos.config.server.model.DetailsUser;
 import com.alibaba.nacos.config.server.service.repository.PersistService;
 import com.alibaba.nacos.config.server.utils.LogUtil;
 import com.alibaba.nacos.config.server.utils.RequestUtil;
@@ -43,7 +44,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -57,6 +57,7 @@ import static com.alibaba.nacos.api.common.Constants.ALL_PATTERN;
 import static com.alibaba.nacos.api.common.Constants.COLON;
 import static com.alibaba.nacos.api.remote.RemoteConstants.LABEL_MODULE_CONFIG;
 import static com.alibaba.nacos.api.remote.RemoteConstants.LABEL_MODULE_NAMING;
+import static com.alibaba.nacos.config.server.constant.Constants.DEFAULT_ADMIN_USER_NAME;
 
 /**
  * Builtin access control entry of Nacos.
@@ -139,7 +140,7 @@ public class NacosAuthManager implements AuthManager {
         
         String username = authentication.getName();
         NacosUser user = new NacosUser();
-        user.setUserName(username);
+        user.setUsername(username);
         user.setToken(token);
         List<RoleInfo> roleInfoList = roleService.getRoles(username);
         if (roleInfoList != null) {
@@ -175,7 +176,7 @@ public class NacosAuthManager implements AuthManager {
         
         String username = authentication.getName();
         NacosUser user = new NacosUser();
-        user.setUserName(username);
+        user.setUsername(username);
         user.setToken(token);
         List<RoleInfo> roleInfoList = roleService.getRoles(username);
         if (roleInfoList != null) {
@@ -221,7 +222,7 @@ public class NacosAuthManager implements AuthManager {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         NacosUser nacosUser = new NacosUser();
-        nacosUser.setUserName(authentication.getName());
+        nacosUser.setUsername(authentication.getName());
         nacosUser.setToken(token);
         return nacosUser;
     }
@@ -232,10 +233,10 @@ public class NacosAuthManager implements AuthManager {
             Loggers.AUTH.debug("auth permission: {}, user: {}", permission, user);
         }
         
-        if (!roleService.hasPermission(user.getUserName(), permission)) {
+        if (!roleService.hasPermission(user.getUsername(), permission)) {
             throw new AccessException("authorization failed!");
         }
-        if (user instanceof NacosUser && ((NacosUser) user).isGlobalAdmin()) {
+        if (DEFAULT_ADMIN_USER_NAME.equals(user.getUsername())) {
             return;
         }
 
@@ -273,11 +274,8 @@ public class NacosAuthManager implements AuthManager {
             appName = moduleDataIdParts[1];
         }
 
-        com.alibaba.nacos.config.server.model.User userDetails = nacosUserDetailsService.getUser(user.getUserName());
-        if (userDetails == null) {
-            throw new UsernameNotFoundException(user.getUserName() + " not found!");
-        }
-        for (AppPermission ap : userDetails.getAppPermissions()) {
+        DetailsUser detailsUserDetails = nacosUserDetailsService.getUser(user.getUsername());
+        for (AppPermission ap : detailsUserDetails.getAppPermissions()) {
             if (ap.getAppName() != null && ap.getAppName().equals(appName) && ap.getAction().contains(permission.getAction())) {
                 return;
             }

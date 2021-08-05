@@ -16,7 +16,7 @@
 
 package com.alibaba.nacos.config.server.service;
 
-import com.alibaba.nacos.config.server.model.User;
+import com.alibaba.nacos.config.server.model.DetailsUser;
 import com.alibaba.nacos.config.server.service.repository.RowMapperManager;
 import com.alibaba.nacos.core.utils.ClassUtils;
 import org.junit.Assert;
@@ -27,9 +27,9 @@ public class RowMapperManagerTest {
     
     @Test
     public void testUserMapper() {
-        RowMapper<User> mapper = new RowMapperManager.UserRowMapper();
+        RowMapper<DetailsUser> mapper = new RowMapperManager.UserRowMapper();
         Assert.assertEquals(ClassUtils.resolveGenericTypeByInterface(mapper.getClass()).getSimpleName(),
-                User.class.getSimpleName());
+                DetailsUser.class.getSimpleName());
     }
     
 }

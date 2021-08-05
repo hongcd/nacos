@@ -72,11 +72,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.alibaba.nacos.api.common.Constants.ALL_PATTERN;
 import static com.alibaba.nacos.config.server.service.repository.RowMapperManager.CONFIG_ADVANCE_INFO_ROW_MAPPER;
@@ -985,12 +981,21 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
     }
     
     @Override
+    @SuppressWarnings("unchecked")
     public Page<ConfigInfo> findConfigInfo4Page(final int pageNo, final int pageSize, final String dataId,
             final String group, final String tenant, final Map<String, Object> configAdvanceInfo) {
         String tenantTmp = StringUtils.isBlank(tenant) ? StringUtils.EMPTY : tenant;
         PaginationHelper<ConfigInfo> helper = createPaginationHelper();
-        final String appName = configAdvanceInfo == null ? null : (String) configAdvanceInfo.get("appName");
-        final String configTags = configAdvanceInfo == null ? null : (String) configAdvanceInfo.get("config_tags");
+
+        String appName = null;
+        String configTags = null;
+        Optional<List<String>> userApps = Optional.empty();
+        if (configAdvanceInfo != null) {
+            userApps = Optional.ofNullable((List<String>) configAdvanceInfo.get("user_apps"));
+            appName = (String) configAdvanceInfo.get("appName");
+            configTags = (String) configAdvanceInfo.get("config_tags");
+        }
+
         String sqlCount = "select count(*) from config_info";
         String sql = "select ID,data_id,group_id,tenant_id,app_name,content,type from config_info";
         StringBuilder where = new StringBuilder(" where ");
@@ -1015,17 +1020,7 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
                 where.append(" and a.app_name=? ");
                 paramList.add(appName);
             }
-            
-            where.append(" and b.tag_name in (");
-            String[] tagArr = configTags.split(",");
-            for (int i = 0; i < tagArr.length; i++) {
-                if (i != 0) {
-                    where.append(", ");
-                }
-                where.append("?");
-                paramList.add(tagArr[i]);
-            }
-            where.append(") ");
+            appendInCondition(where, paramList, "b.tag_name", Lists.newArrayList(configTags.split(",")));
         } else {
             where.append(" tenant_id=? ");
             if (StringUtils.isNotBlank(dataId)) {
@@ -1041,6 +1036,11 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
                 paramList.add(appName);
             }
         }
+        String tempConfigTags = configTags;
+        userApps.ifPresent(userAppList -> {
+            String fieldName = (StringUtils.isNotBlank(tempConfigTags) ? "a." : "") + "app_name";
+            appendInCondition(where, paramList, fieldName, userAppList);
+        });
         try {
             return helper.fetchPage(sqlCount + where, sql + where, paramList.toArray(), pageNo, pageSize,
                     CONFIG_INFO_ROW_MAPPER);
@@ -1048,6 +1048,21 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
             LogUtil.FATAL_LOG.error("[db-error] " + e.toString(), e);
             throw e;
         }
+    }
+
+    private void appendInCondition(StringBuilder where, List<String> paramList, String fieldName, List<String> fieldValues) {
+        if (fieldValues.isEmpty()) {
+            return;
+        }
+        where.append(" AND ").append(fieldName).append(" in(");
+        for (int i = 0; i < fieldValues.size(); i++) {
+            if (i != 0) {
+                where.append(", ");
+            }
+            where.append("?");
+            paramList.add(fieldValues.get(i));
+        }
+        where.append(") ");
     }
     
     @Override
@@ -1683,12 +1698,21 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
     }
     
     @Override
+    @SuppressWarnings("unchecked")
     public Page<ConfigInfo> findConfigInfoLike4Page(final int pageNo, final int pageSize, final String dataId,
             final String group, final String tenant, final Map<String, Object> configAdvanceInfo) {
         String tenantTmp = StringUtils.isBlank(tenant) ? StringUtils.EMPTY : tenant;
-        final String appName = configAdvanceInfo == null ? null : (String) configAdvanceInfo.get("appName");
-        final String content = configAdvanceInfo == null ? null : (String) configAdvanceInfo.get("content");
-        final String configTags = configAdvanceInfo == null ? null : (String) configAdvanceInfo.get("config_tags");
+        String content = null;
+        String appName = null;
+        String configTags = null;
+        Optional<List<String>> userApps = Optional.empty();
+        if (configAdvanceInfo != null) {
+            userApps = Optional.ofNullable((List<String>) configAdvanceInfo.get("user_apps"));
+            appName = (String) configAdvanceInfo.get("appName");
+            configTags = (String) configAdvanceInfo.get("config_tags");
+            content = (String) configAdvanceInfo.get("content");
+        }
+
         PaginationHelper<ConfigInfo> helper = createPaginationHelper();
         String sqlCountRows = "select count(*) from config_info";
         String sqlFetchRows = "select ID,data_id,group_id,tenant_id,app_name,content from config_info";
@@ -1746,7 +1770,11 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
                 params.add(generateLikeArgument(content));
             }
         }
-        
+        String tempConfigTags = configTags;
+        userApps.ifPresent(userAppList -> {
+            String fieldName = (StringUtils.isNotBlank(tempConfigTags) ? "a." : "") + "app_name";
+            appendInCondition(where, params, fieldName, userAppList);
+        });
         try {
             return helper.fetchPage(sqlCountRows + where, sqlFetchRows + where, params.toArray(), pageNo, pageSize,
                     CONFIG_INFO_ROW_MAPPER);

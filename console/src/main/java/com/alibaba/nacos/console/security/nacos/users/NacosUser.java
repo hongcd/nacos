@@ -16,7 +16,7 @@
 
 package com.alibaba.nacos.console.security.nacos.users;
 
-import com.alibaba.nacos.auth.model.User;
+import com.alibaba.nacos.core.model.BaseUser;
 
 /**
  * Nacos User.
@@ -24,11 +24,9 @@ import com.alibaba.nacos.auth.model.User;
  * @author nkorange
  * @since 1.2.0
  */
-public class NacosUser extends User {
+public class NacosUser extends BaseUser {
     
     private String token;
-    
-    private boolean globalAdmin = false;
     
     public String getToken() {
         return token;
@@ -37,17 +35,9 @@ public class NacosUser extends User {
     public void setToken(String token) {
         this.token = token;
     }
-    
-    public boolean isGlobalAdmin() {
-        return globalAdmin;
-    }
-    
-    public void setGlobalAdmin(boolean globalAdmin) {
-        this.globalAdmin = globalAdmin;
-    }
-    
+
     @Override
     public String toString() {
-        return "NacosUser{" + "token='" + token + '\'' + ", globalAdmin=" + globalAdmin + '}';
+        return "NacosUser{" + "token='" + token + '\'' + ", globalAdmin=" + isGlobalAdmin() + '}';
     }
 }

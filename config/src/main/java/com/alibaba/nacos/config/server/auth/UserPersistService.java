@@ -17,7 +17,7 @@
 package com.alibaba.nacos.config.server.auth;
 
 import com.alibaba.nacos.config.server.model.Page;
-import com.alibaba.nacos.config.server.model.User;
+import com.alibaba.nacos.config.server.model.DetailsUser;
 
 import java.util.List;
 
@@ -75,7 +75,7 @@ public interface UserPersistService {
      * @param username username
      * @return user
      */
-    User findUserByUsername(String username);
+    DetailsUser findUserByUsername(String username);
 
     /**
      * get users by page.
@@ -84,7 +84,7 @@ public interface UserPersistService {
      * @param pageSize pageSize
      * @return user page info
      */
-    Page<User> getUsers(int pageNo, int pageSize);
+    Page<DetailsUser> getUsers(int pageNo, int pageSize);
 
     /**
      * fuzzy query user by username.

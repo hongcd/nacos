@@ -19,6 +19,7 @@ package com.alibaba.nacos.core.config;
 import com.alibaba.nacos.core.admission.AdmissionControl;
 import com.alibaba.nacos.core.admission.basic.IpAdmissionControl;
 import com.alibaba.nacos.core.auth.AuthFilter;
+import com.alibaba.nacos.core.cluster.ServerMemberManager;
 import com.alibaba.nacos.core.selector.NamespaceAuthConfigSelector;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -52,7 +53,7 @@ public class CoreConfiguration {
 
     @Bean
     @ConditionalOnBean(NamespaceAuthConfigSelector.class)
-    AdmissionControl ipAdmissionControl(NamespaceAuthConfigSelector namespaceAuthConfigSelector) {
-        return new IpAdmissionControl(namespaceAuthConfigSelector);
+    AdmissionControl ipAdmissionControl(NamespaceAuthConfigSelector namespaceAuthConfigSelector, ServerMemberManager serverMemberManager) {
+        return new IpAdmissionControl(serverMemberManager, namespaceAuthConfigSelector);
     }
 }
