@@ -576,6 +576,7 @@ public final class RowMapperManager {
             userAppPermission.setId(rs.getLong("id"));
             userAppPermission.setUsername(rs.getString("username"));
             userAppPermission.setApp(rs.getString("app"));
+            userAppPermission.setModules(rs.getString("modules"));
             userAppPermission.setAction(rs.getString("action"));
             return userAppPermission;
         }

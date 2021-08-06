@@ -19,15 +19,20 @@ package com.alibaba.nacos.naming.core;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.utils.NamingUtils;
+import com.alibaba.nacos.auth.common.ActionTypes;
 import com.alibaba.nacos.common.utils.JacksonUtils;
+import com.alibaba.nacos.core.utils.NacosUserService;
 import com.alibaba.nacos.naming.constants.FieldsConstants;
 import com.alibaba.nacos.naming.pojo.ClusterInfo;
 import com.alibaba.nacos.naming.pojo.IpAddressInfo;
 import com.alibaba.nacos.naming.pojo.ServiceDetailInfo;
 import com.alibaba.nacos.naming.pojo.ServiceView;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Sets;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -36,6 +41,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Optional;
+
+import static com.alibaba.nacos.sys.env.EnvUtil.FUNCTION_MODE_NAMING;
 
 /**
  * Catalog service for v1.x .
@@ -44,11 +53,14 @@ import java.util.Map;
  */
 @Component
 public class CatalogServiceV1Impl implements CatalogService {
-    
+
     private final ServiceManager serviceManager;
+
+    private final NacosUserService nacosUserService;
     
-    public CatalogServiceV1Impl(ServiceManager serviceManager) {
+    public CatalogServiceV1Impl(ServiceManager serviceManager, NacosUserService nacosUserService) {
         this.serviceManager = serviceManager;
+        this.nacosUserService = nacosUserService;
     }
     
     @Override
@@ -95,7 +107,7 @@ public class CatalogServiceV1Impl implements CatalogService {
         List<Service> services = new ArrayList<>();
         final int total = serviceManager
                 .getPagedService(namespaceId, pageNo - 1, pageSize, param, instancePattern, services,
-                        ignoreEmptyService);
+                        ignoreEmptyService, getUserApps());
         if (CollectionUtils.isEmpty(services)) {
             result.replace(FieldsConstants.SERVICE_LIST, JacksonUtils.transferToJsonNode(Collections.emptyList()));
             result.put(FieldsConstants.COUNT, 0);
@@ -127,7 +139,8 @@ public class CatalogServiceV1Impl implements CatalogService {
                 : NamingUtils.getGroupedNameOptional(serviceName, groupName);
         List<ServiceDetailInfo> serviceDetailInfoList = new ArrayList<>();
         List<Service> services = new ArrayList<>(8);
-        serviceManager.getPagedService(namespaceId, pageNo, pageSize, param, StringUtils.EMPTY, services, false);
+        serviceManager.getPagedService(namespaceId, pageNo, pageSize, param, StringUtils.EMPTY, services,
+                false, getUserApps());
         
         for (Service each : services) {
             ServiceDetailInfo serviceDetailInfo = new ServiceDetailInfo();
@@ -142,6 +155,14 @@ public class CatalogServiceV1Impl implements CatalogService {
         }
         
         return serviceDetailInfoList;
+    }
+
+    private Optional<Set<String>> getUserApps() {
+        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+                .map(Authentication::getName)
+                .flatMap(username -> nacosUserService
+                        .listUserAppsByModuleAndAction(username, FUNCTION_MODE_NAMING, ActionTypes.READ.toString())
+                        .map(Sets::newHashSet));
     }
     
     private Map<String, ClusterInfo> getStringClusterInfoMap(Service service) {

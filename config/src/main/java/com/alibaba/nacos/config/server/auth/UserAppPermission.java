@@ -34,6 +34,8 @@ public class UserAppPermission implements Serializable {
 
     private String app;
 
+    private String modules;
+
     private String action;
 
     public Long getId() {
@@ -58,6 +60,14 @@ public class UserAppPermission implements Serializable {
 
     public void setApp(String app) {
         this.app = app;
+    }
+
+    public String getModules() {
+        return modules;
+    }
+
+    public void setModules(String modules) {
+        this.modules = modules;
     }
 
     public String getAction() {

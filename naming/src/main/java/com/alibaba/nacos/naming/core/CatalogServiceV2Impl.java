@@ -21,7 +21,9 @@ import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.pojo.Cluster;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
+import com.alibaba.nacos.auth.common.ActionTypes;
 import com.alibaba.nacos.common.utils.JacksonUtils;
+import com.alibaba.nacos.core.utils.NacosUserService;
 import com.alibaba.nacos.naming.constants.FieldsConstants;
 import com.alibaba.nacos.naming.core.v2.ServiceManager;
 import com.alibaba.nacos.naming.core.v2.index.ServiceStorage;
@@ -35,7 +37,10 @@ import com.alibaba.nacos.naming.pojo.ServiceDetailInfo;
 import com.alibaba.nacos.naming.pojo.ServiceView;
 import com.alibaba.nacos.naming.utils.ServiceUtil;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -45,8 +50,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Collections;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+
+import static com.alibaba.nacos.sys.env.EnvUtil.FUNCTION_MODE_NAMING;
 
 /**
  * Catalog service for v1.x .
@@ -59,12 +68,16 @@ public class CatalogServiceV2Impl implements CatalogService {
     private final ServiceStorage serviceStorage;
     
     private final NamingMetadataManager metadataManager;
+
+    private final NacosUserService nacosUserService;
     
     private static final int DEFAULT_PORT = 80;
     
-    public CatalogServiceV2Impl(ServiceStorage serviceStorage, NamingMetadataManager metadataManager) {
+    public CatalogServiceV2Impl(ServiceStorage serviceStorage, NamingMetadataManager metadataManager,
+                                NacosUserService nacosUserService) {
         this.serviceStorage = serviceStorage;
         this.metadataManager = metadataManager;
+        this.nacosUserService = nacosUserService;
     }
     
     @Override
@@ -213,21 +226,40 @@ public class CatalogServiceV2Impl implements CatalogService {
     }
     
     private Collection<Service> patternServices(String namespaceId, String group, String serviceName) {
+        Optional<Set<String>> userAppsOptional = getUserApps();
+        if (!userAppsOptional.isPresent()) {
+            return Collections.emptyList();
+        }
         boolean noFilter = StringUtils.isBlank(serviceName) && StringUtils.isBlank(group);
-        if (noFilter) {
-            return ServiceManager.getInstance().getSingletons(namespaceId);
-        }
-        Collection<Service> result = new LinkedList<>();
-        StringJoiner regex = new StringJoiner(Constants.SERVICE_INFO_SPLITER);
-        regex.add(getRegexString(group));
-        regex.add(getRegexString(serviceName));
-        String regexString = regex.toString();
-        for (Service each : ServiceManager.getInstance().getSingletons(namespaceId)) {
-            if (each.getGroupedServiceName().matches(regexString)) {
-                result.add(each);
+        Collection<Service> namespaceServices = ServiceManager.getInstance().getSingletons(namespaceId);
+        if (!noFilter) {
+            Collection<Service> tempList = new LinkedList<>();
+            StringJoiner regex = new StringJoiner(Constants.SERVICE_INFO_SPLITER);
+            regex.add(getRegexString(group));
+            regex.add(getRegexString(serviceName));
+            String regexString = regex.toString();
+            for (Service each : ServiceManager.getInstance().getSingletons(namespaceId)) {
+                if (each.getGroupedServiceName().matches(regexString)) {
+                    tempList.add(each);
+                }
             }
+            namespaceServices = tempList;
         }
-        return result;
+        Set<String> userApps = userAppsOptional.get();
+        if (userApps.isEmpty()) {
+            return namespaceServices;
+        }
+        return namespaceServices.stream()
+                .filter(service -> userApps.contains(service.getName()))
+                .collect(Collectors.toList());
+    }
+
+    private Optional<Set<String>> getUserApps() {
+        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+                .map(Authentication::getName)
+                .flatMap(username -> nacosUserService
+                        .listUserAppsByModuleAndAction(username, FUNCTION_MODE_NAMING, ActionTypes.READ.toString())
+                        .map(Sets::newHashSet));
     }
     
     private String getRegexString(String target) {

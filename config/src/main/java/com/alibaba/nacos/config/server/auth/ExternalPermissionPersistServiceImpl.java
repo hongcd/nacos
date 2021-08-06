@@ -130,7 +130,7 @@ public class ExternalPermissionPersistServiceImpl implements PermissionPersistSe
 
     @Override
     public List<UserAppPermission> findUserAppPermissions(String username) {
-        String sql = "SELECT id, username, app, action FROM users_app_permission WHERE username = ?";
+        String sql = "SELECT id, username, app, modules, action FROM users_app_permission WHERE username = ?";
         try {
             return jt.query(sql, USER_APP_PERMISSION_ROW_MAPPER, username);
         } catch (CannotGetJdbcConnectionException e) {
@@ -141,7 +141,7 @@ public class ExternalPermissionPersistServiceImpl implements PermissionPersistSe
 
     @Override
     public List<UserAppPermission> findAllUserAppPermissions() {
-        String sql = "SELECT id, username, app, action FROM users_app_permission";
+        String sql = "SELECT id, username, app, modules, action FROM users_app_permission";
         try {
             return jt.query(sql, USER_APP_PERMISSION_ROW_MAPPER);
         } catch (CannotGetJdbcConnectionException e) {

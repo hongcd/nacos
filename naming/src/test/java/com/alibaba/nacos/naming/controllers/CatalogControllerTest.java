@@ -18,6 +18,7 @@ package com.alibaba.nacos.naming.controllers;
 
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.core.utils.NacosUserService;
 import com.alibaba.nacos.naming.core.CatalogServiceV1Impl;
 import com.alibaba.nacos.naming.core.Cluster;
 import com.alibaba.nacos.naming.core.Instance;
@@ -42,6 +43,9 @@ public class CatalogControllerTest {
     
     @Mock
     private ServiceManager serviceManager;
+
+    @Mock
+    private NacosUserService nacosUserService;
     
     @Mock
     protected UpgradeJudgement upgradeJudgement;
@@ -57,7 +61,7 @@ public class CatalogControllerTest {
     @Before
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         catalogController = new CatalogController();
-        catalogServiceV1 = new CatalogServiceV1Impl(serviceManager);
+        catalogServiceV1 = new CatalogServiceV1Impl(serviceManager, nacosUserService);
         ReflectionTestUtils.setField(catalogController, "serviceManager", serviceManager);
         ReflectionTestUtils.setField(catalogController, "upgradeJudgement", upgradeJudgement);
         ReflectionTestUtils.setField(catalogController, "catalogServiceV1", catalogServiceV1);

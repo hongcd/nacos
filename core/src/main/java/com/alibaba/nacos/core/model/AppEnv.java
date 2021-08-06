@@ -17,7 +17,6 @@
 package com.alibaba.nacos.core.model;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * env.
@@ -29,13 +28,19 @@ public class AppEnv implements Serializable {
 
     private static final long serialVersionUID = 1693493542087638565L;
 
+    private String namespaceId;
+
     private String accessKey;
 
     private String secretKey;
 
-    private boolean extendsDefaultPermissions = true;
+    public String getNamespaceId() {
+        return namespaceId;
+    }
 
-    private List<PermissionExt> permissions;
+    public void setNamespaceId(String namespaceId) {
+        this.namespaceId = namespaceId;
+    }
 
     public String getAccessKey() {
         return accessKey;
@@ -51,21 +56,5 @@ public class AppEnv implements Serializable {
 
     public void setSecretKey(String secretKey) {
         this.secretKey = secretKey;
-    }
-
-    public boolean isExtendsDefaultPermissions() {
-        return extendsDefaultPermissions;
-    }
-
-    public void setExtendsDefaultPermissions(boolean extendsDefaultPermissions) {
-        this.extendsDefaultPermissions = extendsDefaultPermissions;
-    }
-
-    public List<PermissionExt> getPermissions() {
-        return permissions;
-    }
-
-    public void setPermissions(List<PermissionExt> permissions) {
-        this.permissions = permissions;
     }
 }

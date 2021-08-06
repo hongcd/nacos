@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -928,8 +929,11 @@ public class ServiceManager implements RecordListener<Service> {
     }
     
     public int getPagedService(String namespaceId, int startPage, int pageSize, String param, String containedInstance,
-            List<Service> serviceList, boolean hasIpCount) {
-        
+                               List<Service> serviceList, boolean hasIpCount, Optional<Set<String>> allowAppsOptional) {
+
+        if (!allowAppsOptional.isPresent()) {
+            return 0;
+        }
         List<Service> matchList;
         
         if (chooseServiceMap(namespaceId) == null) {
@@ -951,7 +955,12 @@ public class ServiceManager implements RecordListener<Service> {
             matchList = matchList.stream().filter(s -> !CollectionUtils.isEmpty(s.allIPs()))
                     .collect(Collectors.toList());
         }
-        
+        Set<String> allowApps = allowAppsOptional.get();
+        if (!allowApps.isEmpty()) {
+            matchList = matchList.stream()
+                    .filter(service -> allowApps.contains(service.getName()))
+                    .collect(Collectors.toList());
+        }
         if (StringUtils.isNotBlank(containedInstance)) {
             
             boolean contained;

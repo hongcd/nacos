@@ -30,23 +30,22 @@ import com.alibaba.nacos.console.security.nacos.NacosAuthConfig;
 import com.alibaba.nacos.console.security.nacos.users.NacosUserDetailsServiceImpl;
 import com.alibaba.nacos.core.model.AppAuthConfig;
 import com.alibaba.nacos.core.selector.AppAuthConfigSelector;
-import com.alibaba.nacos.core.model.PermissionExt;
 import com.alibaba.nacos.core.utils.Loggers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import io.jsonwebtoken.lang.Collections;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.mina.util.ConcurrentHashSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static com.alibaba.nacos.api.common.Constants.COLON;
 import static com.alibaba.nacos.config.server.constant.Constants.DEFAULT_ADMIN_USER_NAME;
@@ -90,18 +89,8 @@ public class NacosRoleServiceImpl {
         List<AppAuthConfig> appAuthConfigs = appAuthConfigSelector.selectAll();
         for (AppAuthConfig appAuthConfig : appAuthConfigs) {
             String appName = appAuthConfig.getAppName();
-            List<PermissionExt> defaultPermissions = appAuthConfig.getDefaultPermissions();
 
             appAuthConfig.getEnvs().forEach((envName, env) -> {
-                List<PermissionExt> envPermissions = env.getPermissions();
-                if (env.isExtendsDefaultPermissions()) {
-                    Set<String> envPermissionIds = envPermissions.stream()
-                            .map(PermissionExt::getId)
-                            .collect(Collectors.toSet());
-                    defaultPermissions.stream()
-                            .filter(permission -> !envPermissionIds.contains(permission.getId()))
-                            .forEach(envPermissions::add);
-                }
                 RoleInfo roleInfo = new RoleInfo();
                 // like api-gateway:test
                 roleInfo.setUsername(appName + COLON + envName);
@@ -109,10 +98,9 @@ public class NacosRoleServiceImpl {
                 roleSet.add(roleInfo.getRole());
                 roleInfoMap.put(roleInfo.getUsername(), Lists.newArrayList(roleInfo));
 
-                List<PermissionInfo> rolePermissions = envPermissions.stream()
-                        .map(p -> new PermissionInfo(roleInfo.getRole(), p.getResource(), p.getAction()))
-                        .collect(Collectors.toList());
-                permissionInfoMap.put(roleInfo.getRole(), rolePermissions);
+                String envResource = env.getNamespaceId() + ":*:*";
+                PermissionInfo envPermissionInfo = new PermissionInfo(roleInfo.getRole(), envResource, "rw");
+                permissionInfoMap.put(roleInfo.getRole(), Collections.singletonList(envPermissionInfo));
             });
         }
     }
@@ -175,7 +163,7 @@ public class NacosRoleServiceImpl {
         }
 
         List<RoleInfo> roleInfoList = getRoles(username);
-        if (Collections.isEmpty(roleInfoList)) {
+        if (CollectionUtils.isEmpty(roleInfoList)) {
             return false;
         }
         
@@ -194,7 +182,7 @@ public class NacosRoleServiceImpl {
         // For other roles, use a pattern match to decide if pass or not.
         for (RoleInfo roleInfo : roleInfoList) {
             List<PermissionInfo> permissionInfoList = getPermissions(roleInfo.getRole());
-            if (Collections.isEmpty(permissionInfoList)) {
+            if (CollectionUtils.isEmpty(permissionInfoList)) {
                 continue;
             }
             for (PermissionInfo permissionInfo : permissionInfoList) {
@@ -210,6 +198,9 @@ public class NacosRoleServiceImpl {
     }
     
     public List<RoleInfo> getRoles(String username) {
+        if (username == null) {
+            return Collections.emptyList();
+        }
         List<RoleInfo> roleInfoList = roleInfoMap.get(username);
         if (!authConfigs.isCachingEnabled()) {
             Page<RoleInfo> roleInfoPage = getRolesFromDatabase(username, DEFAULT_PAGE_NO, Integer.MAX_VALUE);
@@ -229,6 +220,9 @@ public class NacosRoleServiceImpl {
     }
     
     public List<PermissionInfo> getPermissions(String role) {
+        if (role == null) {
+            return Collections.emptyList();
+        }
         List<PermissionInfo> permissionInfoList = permissionInfoMap.get(role);
         if (!authConfigs.isCachingEnabled()) {
             Page<PermissionInfo> permissionInfoPage = getPermissionsFromDatabase(role, DEFAULT_PAGE_NO, Integer.MAX_VALUE);

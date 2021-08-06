@@ -232,12 +232,13 @@ public class NacosAuthManager implements AuthManager {
         if (Loggers.AUTH.isDebugEnabled()) {
             Loggers.AUTH.debug("auth permission: {}, user: {}", permission, user);
         }
-        
-        if (!roleService.hasPermission(user.getUsername(), permission)) {
-            throw new AccessException("authorization failed!");
-        }
+
         if (DEFAULT_ADMIN_USER_NAME.equals(user.getUsername())) {
             return;
+        }
+
+        if (!roleService.hasPermission(user.getUsername(), permission)) {
+            throw new AccessException("authorization failed!");
         }
 
         int partLength = 3;
@@ -249,6 +250,7 @@ public class NacosAuthManager implements AuthManager {
         String group = resourceParts[1];
         String lastResource = resourceParts[2];
 
+        // 为兼容web端列表展示
         if (ALL_PATTERN.equals(lastResource)) {
             return;
         }
@@ -274,9 +276,10 @@ public class NacosAuthManager implements AuthManager {
             appName = moduleDataIdParts[1];
         }
 
-        DetailsUser detailsUserDetails = nacosUserDetailsService.getUser(user.getUsername());
+        DetailsUser detailsUserDetails = nacosUserDetailsService.getDetailsUser(user.getUsername());
         for (AppPermission ap : detailsUserDetails.getAppPermissions()) {
-            if (ap.getAppName() != null && ap.getAppName().equals(appName) && ap.getAction().contains(permission.getAction())) {
+            if (ap.getAppName() != null && ap.getAppName().equals(appName) && ap.getAction().contains(permission.getAction())
+                    && (ALL_PATTERN.equals(ap.getModules()) || ap.getModules().contains(module))) {
                 return;
             }
         }

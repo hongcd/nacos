@@ -46,6 +46,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Optional;
 
 import static com.alibaba.nacos.naming.misc.UtilsAndCommons.UPDATE_INSTANCE_METADATA_ACTION_REMOVE;
 import static com.alibaba.nacos.naming.misc.UtilsAndCommons.UPDATE_INSTANCE_METADATA_ACTION_UPDATE;
@@ -412,7 +413,8 @@ public class ServiceManagerTest extends BaseTest {
         ((Set<Instance>) ReflectionTestUtils.getField(cluster, "ephemeralInstances")).add(instance);
         List<Service> actualServices = new ArrayList<>(8);
         int actualSize = serviceManager
-                .getPagedService(TEST_NAMESPACE, 0, 10, StringUtils.EMPTY, "1.1.1.1:1", actualServices, true);
+                .getPagedService(TEST_NAMESPACE, 0, 10, StringUtils.EMPTY,
+                        "1.1.1.1:1", actualServices, true, Optional.of(Collections.emptySet()));
         assertEquals(1, actualSize);
         assertEquals(TEST_SERVICE_NAME, actualServices.get(0).getName());
     }

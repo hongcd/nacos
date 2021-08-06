@@ -28,16 +28,19 @@ public class AppPermission implements Serializable {
 
     private static final long serialVersionUID = -8023159901078225478L;
 
-    public AppPermission() {}
-
-    public AppPermission(String appName, String action) {
-        this.appName = appName;
-        this.action = action;
-    }
-
     private String appName;
 
+    private String modules;
+
     private String action;
+
+    public AppPermission() {}
+
+    public AppPermission(String appName, String modules, String action) {
+        this.appName = appName;
+        this.modules = modules;
+        this.action = action;
+    }
 
     public String getAppName() {
         return appName;
@@ -45,6 +48,14 @@ public class AppPermission implements Serializable {
 
     public void setAppName(String appName) {
         this.appName = appName;
+    }
+
+    public String getModules() {
+        return modules;
+    }
+
+    public void setModules(String modules) {
+        this.modules = modules;
     }
 
     public String getAction() {

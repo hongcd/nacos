@@ -218,7 +218,11 @@ CREATE TABLE `users_app_permission` (
     `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'id',
     `username` VARCHAR(50) NOT NULL COMMENT '用户名',
     `app` VARCHAR(50) NOT NULL COMMENT '应用',
+    `modules` VARCHAR(32) NOT NULL DEFAULT '*' COMMENT '有权限模块，用,号分割，例如config,naming，*表示所有',
     `action` VARCHAR(8) NOT NULL COMMENT '动作,r: 读; w: 写; rw: 读写',
+    `src_user` VARCHAR(50) NOT NULL COMMENT '最近一次操作用户',
+    `gmt_create` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `gmt_modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP() COMMENT '修改时间',
     PRIMARY KEY `pk_id`(`id`),
     UNIQUE KEY `uk_username_app`(`username`, `app`) USING BTREE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_bin COMMENT '用户应用权限表';

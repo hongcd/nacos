@@ -16,8 +16,6 @@
 
 package com.alibaba.nacos.console.security.nacos;
 
-import com.alibaba.nacos.common.utils.CollectionUtils;
-import com.alibaba.nacos.config.server.auth.RoleInfo;
 import com.alibaba.nacos.config.server.model.DetailsUser;
 import com.alibaba.nacos.console.security.nacos.roles.NacosRoleServiceImpl;
 import com.alibaba.nacos.console.security.nacos.users.NacosUserDetails;
@@ -41,10 +39,9 @@ import javax.naming.directory.DirContext;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 import java.util.Hashtable;
-import java.util.List;
 
+import static com.alibaba.nacos.config.server.constant.Constants.DEFAULT_ADMIN_USER_NAME;
 import static com.alibaba.nacos.config.server.constant.Constants.DEFAULT_KP;
-import static com.alibaba.nacos.console.security.nacos.roles.NacosRoleServiceImpl.GLOBAL_ADMIN_ROLE;
 
 /**
  * LDAP auth provider.
@@ -85,14 +82,16 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String username = (String) authentication.getPrincipal();
         String password = (String) authentication.getCredentials();
-        
+        if (username == null) {
+            return null;
+        }
+
         if (isAdmin(username)) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (PasswordEncoderUtil.matches(password, userDetails.getPassword())) {
+            if (Boolean.TRUE.equals(PasswordEncoderUtil.matches(password, userDetails.getPassword()))) {
                 return new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
-            } else {
-                return null;
             }
+            return null;
         }
         
         if (!ldapLogin(username, password)) {
@@ -115,16 +114,7 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
     }
     
     private boolean isAdmin(String username) {
-        List<RoleInfo> roleInfos = nacosRoleService.getRoles(username);
-        if (CollectionUtils.isEmpty(roleInfos)) {
-            return false;
-        }
-        for (RoleInfo roleinfo : roleInfos) {
-            if (GLOBAL_ADMIN_ROLE.equals(roleinfo.getRole())) {
-                return true;
-            }
-        }
-        return false;
+        return DEFAULT_ADMIN_USER_NAME.equals(username);
     }
     
     private boolean ldapLogin(String username, String password) throws AuthenticationException {
