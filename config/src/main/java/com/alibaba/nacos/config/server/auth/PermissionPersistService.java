@@ -71,4 +71,40 @@ public interface PermissionPersistService {
      * @return all app permission info
      */
     List<UserAppPermission> findAllUserAppPermissions();
+
+    /**
+     * fuzzy search user app permissions.
+     * @param username username
+     * @param appName appName
+     * @param pageNo pageNo
+     * @param pageSize pageSize
+     * @return user app permissions page info
+     */
+    Page<UserAppPermission> searchUserAppPermission(String username, String appName, int pageNo, int pageSize);
+
+    /**
+     * get user app permission.
+     * @param username username
+     * @param app app
+     * @return user app permission
+     */
+    UserAppPermission getUserAppPermission(String username, String app);
+
+    /**
+     * assign app permission to user.
+     *
+     * @param username username
+     * @param app app
+     * @param module module
+     * @param action action
+     */
+    void addUserAppPermission(String username, String app, String module, String action, String srcUser);
+
+    /**
+     * delete the role's permission.
+     *
+     * @param username username
+     * @param app app
+     */
+    void deleteUserAppPermission(String username, String app);
 }

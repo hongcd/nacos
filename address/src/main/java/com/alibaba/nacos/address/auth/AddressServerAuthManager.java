@@ -55,4 +55,9 @@ public class AddressServerAuthManager implements AuthManager {
     @Override
     public void auth(Permission permission, User user) throws AccessException {
     }
+
+    @Override
+    public void authApp(Permission permission, User user) throws AccessException {
+
+    }
 }

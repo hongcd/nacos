@@ -51,6 +51,10 @@ const authorityControlMenu = {
       key: 'privilegeManagement',
       url: '/permissionsManagement',
     },
+    {
+      key: 'userAppPermissionsManagement',
+      url: '/userAppPermissionsManagement',
+    },
   ],
 };
 

@@ -17,6 +17,7 @@
 package com.alibaba.nacos.config.server.auth;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 
 /**
  * user app permission.
@@ -37,6 +38,21 @@ public class UserAppPermission implements Serializable {
     private String modules;
 
     private String action;
+
+    private String srcUser;
+
+    private Timestamp createdTime;
+
+    private Timestamp lastModifiedTime;
+
+    public UserAppPermission() {}
+
+    public UserAppPermission(String username, String app, String modules, String action) {
+        this.username = username;
+        this.app = app;
+        this.modules = modules;
+        this.action = action;
+    }
 
     public Long getId() {
         return id;
@@ -76,5 +92,29 @@ public class UserAppPermission implements Serializable {
 
     public void setAction(String action) {
         this.action = action;
+    }
+
+    public String getSrcUser() {
+        return srcUser;
+    }
+
+    public void setSrcUser(String srcUser) {
+        this.srcUser = srcUser;
+    }
+
+    public Timestamp getCreatedTime() {
+        return createdTime;
+    }
+
+    public void setCreatedTime(Timestamp createdTime) {
+        this.createdTime = createdTime;
+    }
+
+    public Timestamp getLastModifiedTime() {
+        return lastModifiedTime;
+    }
+
+    public void setLastModifiedTime(Timestamp lastModifiedTime) {
+        this.lastModifiedTime = lastModifiedTime;
     }
 }

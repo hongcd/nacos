@@ -20,10 +20,7 @@ import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.auth.common.AuthConfigs;
 import com.alibaba.nacos.auth.model.Permission;
 import com.alibaba.nacos.auth.model.User;
-import com.alibaba.nacos.config.server.auth.PermissionInfo;
-import com.alibaba.nacos.config.server.auth.PermissionPersistService;
-import com.alibaba.nacos.config.server.auth.RoleInfo;
-import com.alibaba.nacos.config.server.auth.RolePersistService;
+import com.alibaba.nacos.config.server.auth.*;
 import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.utils.RequestUtil;
 import com.alibaba.nacos.console.security.nacos.NacosAuthConfig;
@@ -37,13 +34,11 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.mina.util.ConcurrentHashSet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
@@ -292,5 +287,22 @@ public class NacosRoleServiceImpl {
     
     public List<String> findRolesLikeRoleName(String role) {
         return rolePersistService.findRolesLikeRoleName(role);
+    }
+
+    public Page<UserAppPermission> searchUserAppPermissionsFromDatabase(String username, String app, int pageNo, int pageSize) {
+        return Optional.ofNullable(permissionPersistService.searchUserAppPermission(username, app, pageNo, pageSize))
+                .orElseGet(Page::new);
+    }
+
+    public void addUserAppPermission(String username, String app, String module, String action, String srcUser) throws NacosException {
+        UserAppPermission userAppPermission = permissionPersistService.getUserAppPermission(username, app);
+        if (userAppPermission != null) {
+            throw new NacosException(HttpStatus.BAD_REQUEST.value(), "Existing data");
+        }
+        permissionPersistService.addUserAppPermission(username, app, module, action, srcUser);
+    }
+
+    public void deleteUserAppPermission(String username, String app) {
+        permissionPersistService.deleteUserAppPermission(username, app);
     }
 }

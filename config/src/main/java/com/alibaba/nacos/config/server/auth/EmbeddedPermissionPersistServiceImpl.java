@@ -112,4 +112,25 @@ public class EmbeddedPermissionPersistServiceImpl implements PermissionPersistSe
     public List<UserAppPermission> findAllUserAppPermissions() {
         throw new UnsupportedOperationException();
     }
+
+
+    @Override
+    public Page<UserAppPermission> searchUserAppPermission(String username, String appName, int pageNo, int pageSize) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public UserAppPermission getUserAppPermission(String username, String app) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void addUserAppPermission(String username, String app, String module, String action, String srcUser) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void deleteUserAppPermission(String username, String app) {
+        throw new UnsupportedOperationException();
+    }
 }

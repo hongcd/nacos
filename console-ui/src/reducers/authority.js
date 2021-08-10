@@ -16,7 +16,15 @@
 
 import { Message } from '@alifd/next';
 import request from '../utils/request';
-import { UPDATE_USER, SIGN_IN, USER_LIST, ROLE_LIST, PERMISSIONS_LIST } from '../constants';
+import {
+  UPDATE_USER,
+  SIGN_IN,
+  USER_LIST,
+  ROLE_LIST,
+  PERMISSIONS_LIST,
+  USER_APP_PERMISSIONS_LIST,
+  APP_LIST,
+} from '../constants';
 
 const initialState = {
   users: {
@@ -37,6 +45,13 @@ const initialState = {
     pagesAvailable: 1,
     pageItems: [],
   },
+  userAppPermissions: {
+    totalCount: 0,
+    pageNumber: 1,
+    pagesAvailable: 1,
+    pageItems: [],
+  },
+  apps: [],
 };
 
 const successMsg = res => {
@@ -140,6 +155,47 @@ const createPermission = ([role, resource, action]) =>
 const deletePermission = permission =>
   request.delete('v1/auth/permissions', { params: permission }).then(res => successMsg(res));
 
+/**
+ * 应用列表
+ * @param {*} params
+ */
+const getApps = params => dispatch =>
+  request.get('v1/auth/app', { params }).then(response => {
+    const { code, data } = response;
+    dispatch({
+      type: APP_LIST,
+      data: code === 200 ? data : [],
+    });
+  });
+
+/**
+ * 查询用户应用权限
+ * @param params
+ * @returns {function(*): *}
+ */
+const searchUserAppPermissions = params => dispatch =>
+  request
+    .get('v1/auth/userAppPermissions', { params })
+    .then(data => dispatch({ type: USER_APP_PERMISSIONS_LIST, data }));
+
+/**
+ * 给用户添加应用权限
+ * @param {*} param0
+ */
+const createUserAppPermission = ([username, app, module, action]) =>
+  request
+    .post('v1/auth/userAppPermissions', { username, app, module, action })
+    .then(res => successMsg(res));
+
+/**
+ * 删除用户应用权限
+ * @param {*} param0
+ */
+const deleteUserAppPermission = userAppPermission =>
+  request
+    .delete('v1/auth/userAppPermissions', { params: userAppPermission })
+    .then(res => successMsg(res));
+
 export default (state = initialState, action) => {
   switch (action.type) {
     case USER_LIST:
@@ -148,6 +204,10 @@ export default (state = initialState, action) => {
       return { ...state, roles: { ...action.data } };
     case PERMISSIONS_LIST:
       return { ...state, permissions: { ...action.data } };
+    case USER_APP_PERMISSIONS_LIST:
+      return { ...state, userAppPermissions: { ...action.data } };
+    case APP_LIST:
+      return { ...state, apps: action.data };
     default:
       return state;
   }
@@ -167,4 +227,8 @@ export {
   getPermissions,
   createPermission,
   deletePermission,
+  searchUserAppPermissions,
+  createUserAppPermission,
+  deleteUserAppPermission,
+  getApps,
 };

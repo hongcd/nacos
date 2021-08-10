@@ -112,6 +112,10 @@ public class AuthConfigs {
         return BooleanUtils
                 .toBoolean(EnvUtil.getProperty("nacos.core.auth.enabled", "false"));
     }
+
+    public boolean isAppAuthEnabled() {
+        return EnvUtil.containsProperty("hx.nacos.core.auth.namespace.id");
+    }
     
     /**
      * Whether permission information can be cached.

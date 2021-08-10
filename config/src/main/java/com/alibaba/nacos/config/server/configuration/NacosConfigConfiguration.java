@@ -93,7 +93,7 @@ public class NacosConfigConfiguration {
         }
 
         @Bean
-        @ConditionalOnMissingBean(NamespaceAuthConfigSelector.class)
+        @ConditionalOnMissingBean(AppAuthConfigSelector.class)
         AppAuthConfigSelector configAppAuthConfigSelector() {
             return new ConfigAppAuthConfigSelector(configQueryRequestHandler, persistService);
         }

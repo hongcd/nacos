@@ -145,8 +145,10 @@ public class AuthFilter implements Filter {
             }
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getErrMsg());
         } catch (IllegalArgumentException e) {
+            Loggers.AUTH.error("[doFilter] errorMsg: " + e.getMessage(), e);
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, ExceptionUtil.getAllExceptionMsg(e));
         } catch (Exception e) {
+            Loggers.AUTH.error("[doFilter] errorMsg: " + e.getMessage(), e);
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server failed," + e.getMessage());
         }
     }

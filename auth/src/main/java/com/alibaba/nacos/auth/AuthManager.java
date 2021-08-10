@@ -71,4 +71,12 @@ public interface AuthManager {
      * @throws AccessException if authorization is failed
      */
     void auth(Permission permission, User user) throws AccessException;
+
+    /**
+     * authorization of app.
+     * @param permission permission
+     * @param user user
+     * @throws AccessException if authorization is failed
+     */
+    void authApp(Permission permission, User user) throws AccessException;
 }

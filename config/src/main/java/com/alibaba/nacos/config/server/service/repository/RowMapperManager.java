@@ -578,6 +578,9 @@ public final class RowMapperManager {
             userAppPermission.setApp(rs.getString("app"));
             userAppPermission.setModules(rs.getString("modules"));
             userAppPermission.setAction(rs.getString("action"));
+            userAppPermission.setSrcUser(rs.getString("src_user"));
+            userAppPermission.setCreatedTime(rs.getTimestamp("gmt_create"));
+            userAppPermission.setLastModifiedTime(rs.getTimestamp("gmt_modified"));
             return userAppPermission;
         }
     }

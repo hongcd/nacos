@@ -21,9 +21,11 @@ import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.service.repository.PaginationHelper;
 import com.alibaba.nacos.config.server.service.repository.extrnal.ExternalStoragePersistServiceImpl;
 import com.alibaba.nacos.config.server.utils.LogUtil;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Conditional;
+import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -32,6 +34,7 @@ import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static com.alibaba.nacos.config.server.service.repository.RowMapperManager.PERMISSION_ROW_MAPPER;
 import static com.alibaba.nacos.config.server.service.repository.RowMapperManager.USER_APP_PERMISSION_ROW_MAPPER;
@@ -130,7 +133,8 @@ public class ExternalPermissionPersistServiceImpl implements PermissionPersistSe
 
     @Override
     public List<UserAppPermission> findUserAppPermissions(String username) {
-        String sql = "SELECT id, username, app, modules, action FROM users_app_permission WHERE username = ?";
+        String sql = "SELECT id, username, app, modules, action, src_user, gmt_create, gmt_modified " +
+                "FROM users_app_permission WHERE username = ?";
         try {
             return jt.query(sql, USER_APP_PERMISSION_ROW_MAPPER, username);
         } catch (CannotGetJdbcConnectionException e) {
@@ -141,11 +145,80 @@ public class ExternalPermissionPersistServiceImpl implements PermissionPersistSe
 
     @Override
     public List<UserAppPermission> findAllUserAppPermissions() {
-        String sql = "SELECT id, username, app, modules, action FROM users_app_permission";
+        String sql = "SELECT id, username, app, modules, action, src_user, gmt_create, gmt_modified " +
+                "FROM users_app_permission";
         try {
             return jt.query(sql, USER_APP_PERMISSION_ROW_MAPPER);
         } catch (CannotGetJdbcConnectionException e) {
             LogUtil.FATAL_LOG.error("[db-error] " + e, e);
+            throw e;
+        }
+    }
+
+    @Override
+    public Page<UserAppPermission> searchUserAppPermission(String username, String appName, int pageNo, int pageSize) {
+        return executeThrowExLog(() -> {
+            String countSql = "select count(*) from users_app_permission";
+            String querySql = "select id, username, app, modules, action, src_user, gmt_create, gmt_modified from users_app_permission";
+            List<Object> params = Lists.newArrayList();
+
+            StringBuilder where = new StringBuilder();
+            if (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(appName)) {
+                where.append(" where 1=1 ");
+            }
+
+            if (StringUtils.isNotBlank(username)) {
+                where.append(" and username like ? ");
+                params.add("%" + username + "%");
+            }
+            if (StringUtils.isNotBlank(appName)) {
+                where.append(" and app like ? ");
+                params.add("%" + appName + "%");
+            }
+
+            if (where.length() > 0) {
+                countSql += where.toString();
+                querySql += where.toString();
+            }
+            PaginationHelper<UserAppPermission> paginationHelper = persistService.createPaginationHelper();
+            return paginationHelper.fetchPage(countSql, querySql, params.toArray(), pageNo, pageSize, USER_APP_PERMISSION_ROW_MAPPER);
+        });
+    }
+
+    @Override
+    public UserAppPermission getUserAppPermission(String username, String app) {
+        return executeThrowExLog(() -> {
+            String sql = "select id, username, app, modules, action, src_user, gmt_create, gmt_modified " +
+                    "from users_app_permission where username = ? and app = ?";
+            return DataAccessUtils.singleResult(jt.query(sql, USER_APP_PERMISSION_ROW_MAPPER, username, app));
+        });
+    }
+
+    @Override
+    public void addUserAppPermission(String username, String app, String module, String action, String srcUser) {
+        executeThrowExLog(() -> {
+            String sql = "insert into users_app_permission(username, app, modules, action, src_user, gmt_create) " +
+                    "values(?, ?, ?, ?, ?, CURRENT_TIMESTAMP())";
+            return jt.update(sql, username, app, module, action, srcUser);
+        });
+    }
+
+    @Override
+    public void deleteUserAppPermission(String username, String app) {
+        executeThrowExLog(() -> {
+            String sql = "delete from users_app_permission where username = ? and app = ?";
+            return jt.update(sql, username, app);
+        });
+    }
+
+    private <T> T executeThrowExLog(Supplier<T> task) {
+        try {
+            return task.get();
+        } catch (CannotGetJdbcConnectionException e) {
+            LogUtil.FATAL_LOG.error("[db-error] " + e, e);
+            throw e;
+        } catch (Exception e) {
+            LogUtil.FATAL_LOG.error("[db-logic-error] " + e, e);
             throw e;
         }
     }

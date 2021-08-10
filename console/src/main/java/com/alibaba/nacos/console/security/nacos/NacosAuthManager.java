@@ -19,6 +19,7 @@ package com.alibaba.nacos.console.security.nacos;
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.remote.request.Request;
 import com.alibaba.nacos.auth.AuthManager;
+import com.alibaba.nacos.auth.common.AuthConfigs;
 import com.alibaba.nacos.auth.exception.AccessException;
 import com.alibaba.nacos.auth.model.Permission;
 import com.alibaba.nacos.auth.model.User;
@@ -58,6 +59,7 @@ import static com.alibaba.nacos.api.common.Constants.COLON;
 import static com.alibaba.nacos.api.remote.RemoteConstants.LABEL_MODULE_CONFIG;
 import static com.alibaba.nacos.api.remote.RemoteConstants.LABEL_MODULE_NAMING;
 import static com.alibaba.nacos.config.server.constant.Constants.DEFAULT_ADMIN_USER_NAME;
+import static com.alibaba.nacos.console.security.nacos.NacosAuthConfig.CONSOLE_RESOURCE_NAME_PREFIX;
 
 /**
  * Builtin access control entry of Nacos.
@@ -92,6 +94,9 @@ public class NacosAuthManager implements AuthManager {
 
     @Autowired
     private PersistService persistService;
+
+    @Autowired
+    private AuthConfigs authConfigs;
 
     private LoadingCache<ConfigKey, Optional<String>> configAppNameCache;
 
@@ -240,7 +245,14 @@ public class NacosAuthManager implements AuthManager {
         if (!roleService.hasPermission(user.getUsername(), permission)) {
             throw new AccessException("authorization failed!");
         }
+        authApp(permission, user);
+    }
 
+    @Override
+    public void authApp(Permission permission, User user) throws AccessException {
+        if (!authConfigs.isAppAuthEnabled() || permission.getResource().startsWith(CONSOLE_RESOURCE_NAME_PREFIX)) {
+            return;
+        }
         int partLength = 3;
         String[] resourceParts = permission.getResource().split(COLON);
         if (resourceParts.length != partLength) {
@@ -278,12 +290,27 @@ public class NacosAuthManager implements AuthManager {
 
         DetailsUser detailsUserDetails = nacosUserDetailsService.getDetailsUser(user.getUsername());
         for (AppPermission ap : detailsUserDetails.getAppPermissions()) {
-            if (ap.getAppName() != null && ap.getAppName().equals(appName) && ap.getAction().contains(permission.getAction())
-                    && (ALL_PATTERN.equals(ap.getModules()) || ap.getModules().contains(module))) {
+            if (hasAppPermission(ap, appName, permission.getAction(), module)) {
                 return;
             }
         }
         throw new AccessException("authorization failed!");
+    }
+
+    /**
+     * has app permission.
+     *
+     * @param appPermission apPermission
+     * @param appName appName
+     * @param action action
+     * @param module module
+     * @return has Permission
+     */
+    private boolean hasAppPermission(AppPermission appPermission, String appName, String action, String module) {
+        String apAppName = appPermission.getAppName();
+        return apAppName != null && (ALL_PATTERN.equals(apAppName) || apAppName.equals(appName))
+                && appPermission.getAction().contains(action)
+                && ALL_PATTERN.equals(appPermission.getModules()) || appPermission.getModules().contains(module);
     }
 
     /**
