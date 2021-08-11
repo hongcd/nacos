@@ -212,6 +212,37 @@ class UserAppPermissionsManagement extends React.Component {
             cell={action => this.getActionText(action)}
           />
           <Table.Column
+            title={locale.createTime}
+            dataIndex="createdTime"
+            cell={val => {
+              if (!val) {
+                return '';
+              }
+              try {
+                const date = new Date(val);
+                return date.toLocaleString(locale.momentLocale);
+              } catch (e) {
+                return '';
+              }
+            }}
+          />
+          <Table.Column title={locale.lastModifiedUser} dataIndex="srcUser" />
+          <Table.Column
+            title={locale.lastModifiedTime}
+            dataIndex="lastModifiedTime"
+            cell={val => {
+              if (!val) {
+                return '';
+              }
+              try {
+                const date = new Date(val);
+                return date.toLocaleString(locale.momentLocale);
+              } catch (e) {
+                return '';
+              }
+            }}
+          />
+          <Table.Column
             title={locale.operation}
             cell={(value, index, record) => (
               <>

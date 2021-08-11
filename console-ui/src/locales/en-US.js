@@ -234,6 +234,7 @@ const I18N_CONF = {
     articleMeet: 'configuration items.',
     lastUpdateTime: 'Last Modified At',
     operator: 'Operator',
+    operatorIp: 'Operator IP',
     operation: 'Operation',
   },
   HistoryDetail: {
@@ -647,6 +648,9 @@ const I18N_CONF = {
     app: 'Application',
     action: 'Action',
     module: 'Module',
+    createTime: 'Create Time',
+    lastModifiedUser: 'Last Modified User',
+    lastModifiedTime: 'Last Modified Time',
     operation: 'Operation',
     deletePermission: 'Delete',
     deletePermissionTip: 'Do you want to delete this permission?',

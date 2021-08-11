@@ -21,6 +21,7 @@ import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.service.repository.PaginationHelper;
 import com.alibaba.nacos.config.server.service.repository.extrnal.ExternalStoragePersistServiceImpl;
 import com.alibaba.nacos.config.server.utils.LogUtil;
+import com.alibaba.nacos.config.server.utils.TimeUtils;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -197,17 +199,20 @@ public class ExternalPermissionPersistServiceImpl implements PermissionPersistSe
     @Override
     public void addUserAppPermission(String username, String app, String modules, String action, String srcUser) {
         executeThrowExLog(() -> {
-            String sql = "insert into users_app_permission(username, app, modules, action, src_user, gmt_create) " +
-                    "values(?, ?, ?, ?, ?, CURRENT_TIMESTAMP())";
-            return jt.update(sql, username, app, modules, action, srcUser);
+            Timestamp currentTimestamp = TimeUtils.getCurrentTime();
+            String sql = "insert into users_app_permission(username, app, modules, action, src_user, gmt_create, gmt_modified) " +
+                    "values(?, ?, ?, ?, ?, ?, ?)";
+            return jt.update(sql, username, app, modules, action, srcUser, currentTimestamp, currentTimestamp);
         });
     }
 
     @Override
     public void updateUserAppPermission(String username, String app, String modules, String action, String srcUser) {
         executeThrowExLog(() -> {
-            String sql = "update users_app_permission set modules = ?, action = ?, src_user = ? where username = ? and app = ?";
-            return jt.update(sql, modules, action, srcUser, username, app);
+            Timestamp currentTimestamp = TimeUtils.getCurrentTime();
+            String sql = "update users_app_permission set modules = ?, action = ?, src_user = ?, gmt_modified = ? " +
+                    "where username = ? and app = ?";
+            return jt.update(sql, modules, action, srcUser, currentTimestamp, username, app);
         });
     }
 

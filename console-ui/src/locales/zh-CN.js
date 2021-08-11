@@ -233,6 +233,7 @@ const I18N_CONF = {
     articleMeet: '条满足要求的配置。',
     lastUpdateTime: '最后更新时间',
     operator: '操作人',
+    operatorIp: '操作人IP',
     operation: '操作',
   },
   HistoryDetail: {
@@ -643,6 +644,9 @@ const I18N_CONF = {
     app: '应用',
     module: '模块',
     action: '动作',
+    createTime: '创建时间',
+    lastModifiedUser: '最后更新用户',
+    lastModifiedTime: '最后更新时间',
     operation: '操作',
     deletePermission: '删除',
     deletePermissionTip: '是否要删除该权限？',

@@ -287,6 +287,7 @@ class HistoryRollback extends React.Component {
               <Table.Column title="Data ID" dataIndex="dataId" />
               <Table.Column title="Group" dataIndex="group" />
               <Table.Column title={locale.operator} dataIndex="srcUser" />
+              <Table.Column title={locale.operatorIp} dataIndex="srcIp" />
               <Table.Column
                 title={locale.lastUpdateTime}
                 dataIndex="lastModifiedTime"
