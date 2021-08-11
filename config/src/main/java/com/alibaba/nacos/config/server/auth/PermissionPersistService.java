@@ -95,10 +95,20 @@ public interface PermissionPersistService {
      *
      * @param username username
      * @param app app
-     * @param module module
+     * @param modules module
      * @param action action
      */
-    void addUserAppPermission(String username, String app, String module, String action, String srcUser);
+    void addUserAppPermission(String username, String app, String modules, String action, String srcUser);
+
+    /**
+     * update user app permission.
+     * @param username username
+     * @param app app
+     * @param modules module
+     * @param action action
+     * @param srcUser srcUser
+     */
+    void updateUserAppPermission(String username, String app, String modules, String action, String srcUser);
 
     /**
      * delete the role's permission.

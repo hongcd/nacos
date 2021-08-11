@@ -195,11 +195,19 @@ public class ExternalPermissionPersistServiceImpl implements PermissionPersistSe
     }
 
     @Override
-    public void addUserAppPermission(String username, String app, String module, String action, String srcUser) {
+    public void addUserAppPermission(String username, String app, String modules, String action, String srcUser) {
         executeThrowExLog(() -> {
             String sql = "insert into users_app_permission(username, app, modules, action, src_user, gmt_create) " +
                     "values(?, ?, ?, ?, ?, CURRENT_TIMESTAMP())";
-            return jt.update(sql, username, app, module, action, srcUser);
+            return jt.update(sql, username, app, modules, action, srcUser);
+        });
+    }
+
+    @Override
+    public void updateUserAppPermission(String username, String app, String modules, String action, String srcUser) {
+        executeThrowExLog(() -> {
+            String sql = "update users_app_permission set modules = ?, action = ?, src_user = ? where username = ? and app = ?";
+            return jt.update(sql, modules, action, srcUser, username, app);
         });
     }
 

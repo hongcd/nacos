@@ -182,9 +182,22 @@ const searchUserAppPermissions = params => dispatch =>
  * 给用户添加应用权限
  * @param {*} param0
  */
-const createUserAppPermission = ([username, app, module, action]) =>
+const createUserAppPermission = ([username, app, modules, action]) =>
   request
-    .post('v1/auth/userAppPermissions', { username, app, module, action })
+    .post('v1/auth/userAppPermissions', { username, app, modules, action })
+    .then(res => successMsg(res));
+
+/**
+ * 修改用户应用权限
+ * @param username
+ * @param app
+ * @param module
+ * @param action
+ * @returns {*}
+ */
+const editUserAppPermission = ([username, app, modules, action]) =>
+  request
+    .put('v1/auth/userAppPermissions', { username, app, modules, action })
     .then(res => successMsg(res));
 
 /**
@@ -229,6 +242,7 @@ export {
   deletePermission,
   searchUserAppPermissions,
   createUserAppPermission,
+  editUserAppPermission,
   deleteUserAppPermission,
   getApps,
 };

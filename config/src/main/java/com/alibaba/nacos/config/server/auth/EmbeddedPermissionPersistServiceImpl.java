@@ -125,7 +125,12 @@ public class EmbeddedPermissionPersistServiceImpl implements PermissionPersistSe
     }
 
     @Override
-    public void addUserAppPermission(String username, String app, String module, String action, String srcUser) {
+    public void addUserAppPermission(String username, String app, String modules, String action, String srcUser) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void updateUserAppPermission(String username, String app, String modules, String action, String srcUser) {
         throw new UnsupportedOperationException();
     }
 

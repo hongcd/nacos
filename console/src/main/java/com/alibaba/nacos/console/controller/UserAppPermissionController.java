@@ -19,7 +19,9 @@ package com.alibaba.nacos.console.controller;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.auth.annotation.Secured;
 import com.alibaba.nacos.auth.common.ActionTypes;
+import com.alibaba.nacos.auth.exception.AccessException;
 import com.alibaba.nacos.common.model.RestResultUtils;
+import com.alibaba.nacos.config.server.auth.RoleInfo;
 import com.alibaba.nacos.config.server.auth.UserAppPermission;
 import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.utils.RequestUtil;
@@ -27,18 +29,15 @@ import com.alibaba.nacos.console.security.nacos.NacosAuthConfig;
 import com.alibaba.nacos.console.security.nacos.roles.NacosRoleServiceImpl;
 import com.alibaba.nacos.core.utils.NacosUserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import static com.alibaba.nacos.api.common.Constants.ALL_PATTERN;
+import static com.alibaba.nacos.config.server.constant.Constants.DEFAULT_ADMIN_USER_NAME;
+import static com.alibaba.nacos.console.security.nacos.roles.NacosRoleServiceImpl.GLOBAL_ADMIN_ROLE;
 
 /**
  * User App Permission operation controller.
@@ -86,14 +85,37 @@ public class UserAppPermissionController {
     @Secured(resource = NacosAuthConfig.CONSOLE_RESOURCE_NAME_PREFIX + "userAppPermissions", action = ActionTypes.WRITE)
     public Object addPermission(@RequestParam String username,
                                 @RequestParam String app,
-                                @RequestParam String module,
+                                @RequestParam String modules,
                                 @RequestParam String action) throws NacosException {
-        String srcUser = RequestUtil.getSrcUserName(RequestUtil.getRequest());
-        if (!hasPermission(srcUser, app)) {
-            return RestResultUtils.failed(HttpStatus.FORBIDDEN.value(), null, "Permission denied");
+        String loginUser = RequestUtil.getSrcUserName(RequestUtil.getRequest());
+        if (!hasPermission(loginUser, username, app)) {
+            throw new AccessException("Permission denied");
         }
-        nacosRoleService.addUserAppPermission(username, app, module, action, srcUser);
-        return RestResultUtils.success("add permission ok!");
+        nacosRoleService.addUserAppPermission(username, app, modules, action, loginUser);
+        return RestResultUtils.success("add user app permission ok!");
+    }
+
+    /**
+     * update a app permission.
+     *
+     * @param username     the username
+     * @param app          the app
+     * @param module       the related module
+     * @param action       the related action
+     * @return ok if succeed
+     */
+    @PutMapping
+    @Secured(resource = NacosAuthConfig.CONSOLE_RESOURCE_NAME_PREFIX + "userAppPermissions", action = ActionTypes.WRITE)
+    public Object updatePermission(@RequestParam String username,
+                                   @RequestParam String app,
+                                   @RequestParam String modules,
+                                   @RequestParam String action) throws NacosException {
+        String loginUser = RequestUtil.getSrcUserName(RequestUtil.getRequest());
+        if (!hasPermission(loginUser, username, app)) {
+            throw new AccessException("Permission denied");
+        }
+        nacosRoleService.updateUserAppPermission(username, app, modules, action, loginUser);
+        return RestResultUtils.success("update user app permission ok!");
     }
     
     /**
@@ -105,14 +127,28 @@ public class UserAppPermissionController {
      */
     @DeleteMapping
     @Secured(resource = NacosAuthConfig.CONSOLE_RESOURCE_NAME_PREFIX + "userAppPermissions", action = ActionTypes.WRITE)
-    public Object deletePermission(@RequestParam String username, @RequestParam String app) {
+    public Object deletePermission(@RequestParam String username, @RequestParam String app) throws AccessException {
         nacosRoleService.deleteUserAppPermission(username, app);
-        nacosRoleService.deleteUserAppPermission(username, app);
-        return RestResultUtils.success("delete permission ok!");
+        String loginUser = RequestUtil.getSrcUserName(RequestUtil.getRequest());
+        if (!hasPermission(loginUser, username, app)) {
+            throw new AccessException("Permission denied");
+        }
+        return RestResultUtils.success("delete user app permission ok!");
     }
 
-    private boolean hasPermission(String currentUsername, String app) {
-        Optional<List<String>> appsOptional = nacosUserService.listUserAppsByModuleAndAction(currentUsername, ALL_PATTERN, "rw");
+    private boolean hasPermission(String loginUser, String username, String app) {
+        if (!DEFAULT_ADMIN_USER_NAME.equals(loginUser) && !loginUser.equals(username)) {
+            Predicate<List<RoleInfo>> isAdminUser =
+                    roles -> roles.stream().anyMatch(role -> GLOBAL_ADMIN_ROLE.equals(role.getRole()));
+            if (!isAdminUser.test(nacosRoleService.getRoles(loginUser))) {
+                return false;
+            }
+            if (isAdminUser.test(nacosRoleService.getRoles(username))) {
+                return false;
+            }
+        }
+
+        Optional<List<String>> appsOptional = nacosUserService.listUserAppsByModuleAndAction(loginUser, ALL_PATTERN, "rw");
         if (!appsOptional.isPresent()) {
             return false;
         }

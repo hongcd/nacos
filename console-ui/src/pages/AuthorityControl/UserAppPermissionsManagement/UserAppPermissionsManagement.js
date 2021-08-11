@@ -16,17 +16,32 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Dialog, Pagination, Table, ConfigProvider } from '@alifd/next';
+import {
+  Button,
+  Dialog,
+  Pagination,
+  Table,
+  ConfigProvider,
+  Form,
+  Input,
+  Switch,
+  Grid,
+} from '@alifd/next';
 import { connect } from 'react-redux';
 import {
   createUserAppPermission,
   deleteUserAppPermission,
   searchUserAppPermissions,
+  editUserAppPermission,
 } from '../../../reducers/authority';
 import RegionGroup from '../../../components/RegionGroup';
 import NewUserAppPermissions from './NewUserAppPermissions';
+import EditUserAppPermission from './EditUserAppPermission';
 
 import './UserAppPermissionsManagement.scss';
+
+const FormItem = Form.Item;
+const { Row, Col } = Grid;
 
 @connect(
   state => ({
@@ -46,13 +61,17 @@ class UserAppPermissionsManagement extends React.Component {
 
   constructor(props) {
     super(props);
+    this.editUserAppPermissionDialog = React.createRef();
     this.state = {
       loading: true,
       pageNo: 1,
-      pageSize: 9,
-      username: '',
-      app: '',
-      createPermission: false,
+      pageSize: 10,
+      createPermissionVisible: false,
+      editPermissionVisible: false,
+      search: {
+        username: '',
+        app: '',
+      },
     };
   }
 
@@ -62,9 +81,9 @@ class UserAppPermissionsManagement extends React.Component {
 
   searchUserAppPermissions() {
     this.setState({ loading: true });
-    const { pageNo, pageSize, username, app } = this.state;
+    const { pageNo, pageSize, search } = this.state;
     this.props
-      .searchUserAppPermissions({ pageNo, pageSize, username, app })
+      .searchUserAppPermissions({ pageNo, pageSize, ...search })
       .then(() => {
         if (this.state.loading) {
           this.setState({ loading: false });
@@ -75,6 +94,15 @@ class UserAppPermissionsManagement extends React.Component {
 
   closeCreatePermission() {
     this.setState({ createPermissionVisible: false });
+  }
+
+  openEditPermission(editUserAppPermission) {
+    this.setState({ editPermissionVisible: true });
+    this.editUserAppPermissionDialog.current.getInstance().show(editUserAppPermission);
+  }
+
+  closeEditPermission() {
+    this.setState({ editPermissionVisible: false });
   }
 
   getActionText(action) {
@@ -99,22 +127,72 @@ class UserAppPermissionsManagement extends React.Component {
 
   render() {
     const { userAppPermissions, locale } = this.props;
-    const { loading, pageSize, pageNo, createPermissionVisible } = this.state;
+    const {
+      loading,
+      pageSize,
+      pageNo,
+      search,
+      createPermissionVisible,
+      editPermissionVisible,
+    } = this.state;
+
     return (
       <>
         <RegionGroup left={locale.privilegeManagement} />
-        <div className="filter-panel">
-          <Button
-            type="primary"
-            onClick={() => this.setState({ createPermissionVisible: true })}
-            style={{ marginRight: 20 }}
-          >
-            {locale.addAppPermission}
-          </Button>
-          <Button type="secondary" onClick={() => this.searchUserAppPermissions()}>
-            {locale.refresh}
-          </Button>
-        </div>
+        <Row
+          className="demo-row"
+          style={{
+            marginBottom: 10,
+            marginTop: 20,
+            padding: 0,
+          }}
+        >
+          <Col span="24">
+            <Form inline field={this.field}>
+              <FormItem label={locale.username}>
+                <Input
+                  placeholder={locale.usernamePlaceholder}
+                  style={{ width: 200 }}
+                  value={search.username}
+                  onChange={username => this.setState({ search: { ...search, username } })}
+                  onPressEnter={() =>
+                    this.setState({ pageNo: 1 }, () => this.searchUserAppPermissions())
+                  }
+                />
+              </FormItem>
+              <FormItem label={locale.app}>
+                <Input
+                  placeholder={locale.appPlaceholder}
+                  style={{ width: 200 }}
+                  value={search.app}
+                  onChange={app => this.setState({ search: { ...search, app } })}
+                  onPressEnter={() =>
+                    this.setState({ pageNo: 1 }, () => this.searchUserAppPermissions())
+                  }
+                />
+              </FormItem>
+              <FormItem label="">
+                <Button
+                  type="primary"
+                  onClick={() =>
+                    this.setState({ pageNo: 1 }, () => this.searchUserAppPermissions())
+                  }
+                  style={{ marginRight: 10 }}
+                >
+                  {locale.query}
+                </Button>
+              </FormItem>
+              <FormItem label="" style={{ float: 'right' }}>
+                <Button
+                  type="secondary"
+                  onClick={() => this.setState({ createPermissionVisible: true })}
+                >
+                  {locale.addAppPermission}
+                </Button>
+              </FormItem>
+            </Form>
+          </Col>
+        </Row>
         <Table
           dataSource={userAppPermissions.pageItems}
           loading={loading}
@@ -137,22 +215,31 @@ class UserAppPermissionsManagement extends React.Component {
             title={locale.operation}
             cell={(value, index, record) => (
               <>
-                <Button
-                  type="primary"
-                  warning
-                  onClick={() =>
-                    Dialog.confirm({
-                      title: locale.deletePermission,
-                      content: locale.deletePermissionTip,
-                      onOk: () =>
-                        deleteUserAppPermission(record).then(() => {
-                          this.setState({ pageNo: 1 }, () => this.searchUserAppPermissions());
-                        }),
-                    })
-                  }
-                >
-                  {locale.deletePermission}
-                </Button>
+                <div>
+                  <Button
+                    type="primary"
+                    style={{ marginRight: 10 }}
+                    onClick={() => this.openEditPermission(record)}
+                  >
+                    {locale.edit}
+                  </Button>
+                  <Button
+                    type="primary"
+                    warning
+                    onClick={() =>
+                      Dialog.confirm({
+                        title: locale.deletePermission,
+                        content: locale.deletePermissionTip,
+                        onOk: () =>
+                          deleteUserAppPermission(record).then(() => {
+                            this.searchUserAppPermissions();
+                          }),
+                      })
+                    }
+                  >
+                    {locale.deletePermission}
+                  </Button>
+                </div>
               </>
             )}
           />
@@ -175,6 +262,17 @@ class UserAppPermissionsManagement extends React.Component {
             })
           }
           onCancel={() => this.closeCreatePermission()}
+        />
+        <EditUserAppPermission
+          ref={this.editUserAppPermissionDialog}
+          visible={editPermissionVisible}
+          onOk={permission =>
+            editUserAppPermission(permission).then(res => {
+              this.setState({ pageNo: 1 }, () => this.searchUserAppPermissions());
+              return res;
+            })
+          }
+          onCancel={() => this.closeEditPermission()}
         />
       </>
     );

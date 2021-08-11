@@ -294,12 +294,20 @@ public class NacosRoleServiceImpl {
                 .orElseGet(Page::new);
     }
 
-    public void addUserAppPermission(String username, String app, String module, String action, String srcUser) throws NacosException {
+    public void addUserAppPermission(String username, String app, String modules, String action, String srcUser) throws NacosException {
         UserAppPermission userAppPermission = permissionPersistService.getUserAppPermission(username, app);
         if (userAppPermission != null) {
             throw new NacosException(HttpStatus.BAD_REQUEST.value(), "Existing data");
         }
-        permissionPersistService.addUserAppPermission(username, app, module, action, srcUser);
+        permissionPersistService.addUserAppPermission(username, app, modules, action, srcUser);
+    }
+
+    public void updateUserAppPermission(String username, String app, String modules, String action, String srcUser) throws NacosException {
+        UserAppPermission userAppPermission = permissionPersistService.getUserAppPermission(username, app);
+        if (userAppPermission == null) {
+            throw new NacosException(HttpStatus.BAD_REQUEST.value(), "Data does not exist");
+        }
+        permissionPersistService.updateUserAppPermission(username, app, modules, action, srcUser);
     }
 
     public void deleteUserAppPermission(String username, String app) {
