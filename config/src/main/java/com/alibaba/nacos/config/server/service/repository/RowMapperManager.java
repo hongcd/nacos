@@ -19,8 +19,20 @@ package com.alibaba.nacos.config.server.service.repository;
 import com.alibaba.nacos.config.server.auth.PermissionInfo;
 import com.alibaba.nacos.config.server.auth.RoleInfo;
 import com.alibaba.nacos.config.server.auth.UserAppPermission;
-import com.alibaba.nacos.config.server.model.*;
+import com.alibaba.nacos.config.server.model.ConfigInfoWrapper;
+import com.alibaba.nacos.config.server.model.ConfigKey;
 import com.alibaba.nacos.config.server.model.DetailsUser;
+import com.alibaba.nacos.config.server.model.ConfigInfoBetaWrapper;
+import com.alibaba.nacos.config.server.model.ConfigInfoTagWrapper;
+import com.alibaba.nacos.config.server.model.ConfigInfo;
+import com.alibaba.nacos.config.server.model.ConfigAdvanceInfo;
+import com.alibaba.nacos.config.server.model.ConfigAllInfo;
+import com.alibaba.nacos.config.server.model.ConfigInfo4Beta;
+import com.alibaba.nacos.config.server.model.ConfigInfo4Tag;
+import com.alibaba.nacos.config.server.model.ConfigInfoBase;
+import com.alibaba.nacos.config.server.model.ConfigInfoAggr;
+import com.alibaba.nacos.config.server.model.ConfigInfoChanged;
+import com.alibaba.nacos.config.server.model.ConfigHistoryInfo;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -29,6 +41,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.alibaba.nacos.config.server.model.TenantInfo;
 import org.springframework.jdbc.core.RowMapper;
 
 /**

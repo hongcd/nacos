@@ -113,7 +113,6 @@ public class EmbeddedPermissionPersistServiceImpl implements PermissionPersistSe
         throw new UnsupportedOperationException();
     }
 
-
     @Override
     public Page<UserAppPermission> searchUserAppPermission(String username, String appName, int pageNo, int pageSize) {
         throw new UnsupportedOperationException();

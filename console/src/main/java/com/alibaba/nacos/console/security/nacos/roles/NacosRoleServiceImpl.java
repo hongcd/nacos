@@ -20,7 +20,11 @@ import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.auth.common.AuthConfigs;
 import com.alibaba.nacos.auth.model.Permission;
 import com.alibaba.nacos.auth.model.User;
-import com.alibaba.nacos.config.server.auth.*;
+import com.alibaba.nacos.config.server.auth.PermissionInfo;
+import com.alibaba.nacos.config.server.auth.PermissionPersistService;
+import com.alibaba.nacos.config.server.auth.RoleInfo;
+import com.alibaba.nacos.config.server.auth.RolePersistService;
+import com.alibaba.nacos.config.server.auth.UserAppPermission;
 import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.utils.RequestUtil;
 import com.alibaba.nacos.console.security.nacos.NacosAuthConfig;
@@ -38,9 +42,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
+import java.util.Optional;
 
 import static com.alibaba.nacos.api.common.Constants.COLON;
 import static com.alibaba.nacos.config.server.constant.Constants.DEFAULT_ADMIN_USER_NAME;
@@ -284,16 +292,38 @@ public class NacosRoleServiceImpl {
     public void deletePermission(String role, String resource, String action) {
         permissionPersistService.deletePermission(role, resource, action);
     }
-    
+
+    /**
+     * fuzzy search role name by role.
+     * @param role role
+     * @return role name
+     */
     public List<String> findRolesLikeRoleName(String role) {
         return rolePersistService.findRolesLikeRoleName(role);
     }
 
+    /**
+     * fuzzy search UserAppPermission by username and app from db.
+     * @param username username
+     * @param app app
+     * @param pageNo pageNo
+     * @param pageSize pageSize
+     * @return {@link UserAppPermission} page
+     */
     public Page<UserAppPermission> searchUserAppPermissionsFromDatabase(String username, String app, int pageNo, int pageSize) {
         return Optional.ofNullable(permissionPersistService.searchUserAppPermission(username, app, pageNo, pageSize))
                 .orElseGet(Page::new);
     }
 
+    /**
+     * add user app permission.
+     * @param username username
+     * @param app app
+     * @param modules modules
+     * @param action action
+     * @param srcUser srcUser
+     * @throws NacosException exists data
+     */
     public void addUserAppPermission(String username, String app, String modules, String action, String srcUser) throws NacosException {
         UserAppPermission userAppPermission = permissionPersistService.getUserAppPermission(username, app);
         if (userAppPermission != null) {
@@ -302,6 +332,15 @@ public class NacosRoleServiceImpl {
         permissionPersistService.addUserAppPermission(username, app, modules, action, srcUser);
     }
 
+    /**
+     * update use app permission.
+     * @param username username
+     * @param app app
+     * @param modules modules
+     * @param action action
+     * @param srcUser srcUser
+     * @throws NacosException Data does not exist
+     */
     public void updateUserAppPermission(String username, String app, String modules, String action, String srcUser) throws NacosException {
         UserAppPermission userAppPermission = permissionPersistService.getUserAppPermission(username, app);
         if (userAppPermission == null) {
@@ -310,6 +349,11 @@ public class NacosRoleServiceImpl {
         permissionPersistService.updateUserAppPermission(username, app, modules, action, srcUser);
     }
 
+    /**
+     * delete user app permission by username and app.
+     * @param username username
+     * @param app app
+     */
     public void deleteUserAppPermission(String username, String app) {
         permissionPersistService.deleteUserAppPermission(username, app);
     }

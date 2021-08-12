@@ -135,8 +135,8 @@ public class ExternalPermissionPersistServiceImpl implements PermissionPersistSe
 
     @Override
     public List<UserAppPermission> findUserAppPermissions(String username) {
-        String sql = "SELECT id, username, app, modules, action, src_user, gmt_create, gmt_modified " +
-                "FROM users_app_permission WHERE username = ?";
+        String sql = "SELECT id, username, app, modules, action, src_user, gmt_create, gmt_modified "
+                + "FROM users_app_permission WHERE username = ?";
         try {
             return jt.query(sql, USER_APP_PERMISSION_ROW_MAPPER, username);
         } catch (CannotGetJdbcConnectionException e) {
@@ -147,8 +147,8 @@ public class ExternalPermissionPersistServiceImpl implements PermissionPersistSe
 
     @Override
     public List<UserAppPermission> findAllUserAppPermissions() {
-        String sql = "SELECT id, username, app, modules, action, src_user, gmt_create, gmt_modified " +
-                "FROM users_app_permission";
+        String sql = "SELECT id, username, app, modules, action, src_user, gmt_create, gmt_modified "
+                + "FROM users_app_permission";
         try {
             return jt.query(sql, USER_APP_PERMISSION_ROW_MAPPER);
         } catch (CannotGetJdbcConnectionException e) {
@@ -190,8 +190,8 @@ public class ExternalPermissionPersistServiceImpl implements PermissionPersistSe
     @Override
     public UserAppPermission getUserAppPermission(String username, String app) {
         return executeThrowExLog(() -> {
-            String sql = "select id, username, app, modules, action, src_user, gmt_create, gmt_modified " +
-                    "from users_app_permission where username = ? and app = ?";
+            String sql = "select id, username, app, modules, action, src_user, gmt_create, gmt_modified "
+                    + "from users_app_permission where username = ? and app = ?";
             return DataAccessUtils.singleResult(jt.query(sql, USER_APP_PERMISSION_ROW_MAPPER, username, app));
         });
     }
@@ -200,8 +200,8 @@ public class ExternalPermissionPersistServiceImpl implements PermissionPersistSe
     public void addUserAppPermission(String username, String app, String modules, String action, String srcUser) {
         executeThrowExLog(() -> {
             Timestamp currentTimestamp = TimeUtils.getCurrentTime();
-            String sql = "insert into users_app_permission(username, app, modules, action, src_user, gmt_create, gmt_modified) " +
-                    "values(?, ?, ?, ?, ?, ?, ?)";
+            String sql = "insert into users_app_permission(username, app, modules, action, src_user, gmt_create, gmt_modified) "
+                    + "values(?, ?, ?, ?, ?, ?, ?)";
             return jt.update(sql, username, app, modules, action, srcUser, currentTimestamp, currentTimestamp);
         });
     }
@@ -210,8 +210,8 @@ public class ExternalPermissionPersistServiceImpl implements PermissionPersistSe
     public void updateUserAppPermission(String username, String app, String modules, String action, String srcUser) {
         executeThrowExLog(() -> {
             Timestamp currentTimestamp = TimeUtils.getCurrentTime();
-            String sql = "update users_app_permission set modules = ?, action = ?, src_user = ?, gmt_modified = ? " +
-                    "where username = ? and app = ?";
+            String sql = "update users_app_permission set modules = ?, action = ?, src_user = ?, gmt_modified = ? "
+                    + "where username = ? and app = ?";
             return jt.update(sql, modules, action, srcUser, currentTimestamp, username, app);
         });
     }

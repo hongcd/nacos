@@ -72,7 +72,12 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Optional;
 
 import static com.alibaba.nacos.api.common.Constants.ALL_PATTERN;
 import static com.alibaba.nacos.config.server.service.repository.RowMapperManager.CONFIG_ADVANCE_INFO_ROW_MAPPER;
@@ -171,7 +176,7 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
     
     @Override
     public void addConfigInfo(final String srcIp, final String srcUser, final ConfigInfo configInfo,
-            final Timestamp time, final Map<String, Object> configAdvanceInfo, final boolean notify) {
+                              final Timestamp time, final Map<String, Object> configAdvanceInfo, final boolean notify) {
         boolean result = tjt.execute(status -> {
             try {
                 long configId = addConfigInfoAtomic(-1, srcIp, srcUser, configInfo, time, configAdvanceInfo);

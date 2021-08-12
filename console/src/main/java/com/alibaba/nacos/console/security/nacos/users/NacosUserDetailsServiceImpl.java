@@ -49,7 +49,9 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import static com.alibaba.nacos.api.common.Constants.*;
+import static com.alibaba.nacos.api.common.Constants.ALL_PATTERN;
+import static com.alibaba.nacos.api.common.Constants.COLON;
+import static com.alibaba.nacos.api.common.Constants.COMMA;
 import static com.alibaba.nacos.config.server.constant.Constants.DEFAULT_ADMIN_USER_NAME;
 
 /**

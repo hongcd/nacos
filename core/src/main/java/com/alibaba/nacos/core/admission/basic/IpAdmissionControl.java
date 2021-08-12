@@ -16,7 +16,6 @@
 
 package com.alibaba.nacos.core.admission.basic;
 
-import com.alibaba.nacos.api.utils.NetUtils;
 import com.alibaba.nacos.core.admission.AdmissionControl;
 import com.alibaba.nacos.core.admission.AdmissionInfo;
 import com.alibaba.nacos.core.cluster.Member;

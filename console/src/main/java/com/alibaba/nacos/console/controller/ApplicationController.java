@@ -61,6 +61,8 @@ public class ApplicationController {
     @Autowired
     private NacosUserService nacosUserService;
 
+    public static final int THRESHOLD = 10;
+
     /**
      * get all app list.
      *
@@ -80,7 +82,7 @@ public class ApplicationController {
                 return RestResultUtils.success(Collections.emptyList());
             } else if (!appsOptional.get().isEmpty()) {
                 Collection<String> hasAppPermissions = appsOptional.get();
-                if (hasAppPermissions.size() > 10) {
+                if (hasAppPermissions.size() > THRESHOLD) {
                     hasAppPermissions = Sets.newHashSet(hasAppPermissions);
                 }
                 appList = appList.stream().filter(hasAppPermissions::contains).collect(Collectors.toList());
