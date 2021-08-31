@@ -211,7 +211,7 @@ public class NacosRoleServiceImpl {
                 roleInfoList = roleInfoPage.getPageItems();
             }
         }
-        return roleInfoList;
+        return Optional.ofNullable(roleInfoList).orElse(Collections.emptyList());
     }
     
     public Page<RoleInfo> getRolesFromDatabase(String userName, int pageNo, int pageSize) {
@@ -233,7 +233,7 @@ public class NacosRoleServiceImpl {
                 permissionInfoList = permissionInfoPage.getPageItems();
             }
         }
-        return permissionInfoList;
+        return Optional.ofNullable(permissionInfoList).orElse(Collections.emptyList());
     }
     
     public Page<PermissionInfo> getPermissionsByRoleFromDatabase(String role, int pageNo, int pageSize) {
