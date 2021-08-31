@@ -310,7 +310,7 @@ public class NacosAuthManager implements AuthManager {
         String apAppName = appPermission.getAppName();
         return apAppName != null && (ALL_PATTERN.equals(apAppName) || apAppName.equals(appName))
                 && appPermission.getAction().contains(action)
-                && ALL_PATTERN.equals(appPermission.getModules()) || appPermission.getModules().contains(module);
+                && (ALL_PATTERN.equals(appPermission.getModules()) || appPermission.getModules().contains(module));
     }
 
     /**

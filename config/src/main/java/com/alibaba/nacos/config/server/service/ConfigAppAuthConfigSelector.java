@@ -28,6 +28,7 @@ import com.alibaba.nacos.config.server.service.repository.PersistService;
 import com.alibaba.nacos.config.server.utils.LogUtil;
 import com.alibaba.nacos.core.model.AppAuthConfig;
 import com.alibaba.nacos.core.selector.AppAuthConfigSelector;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import org.springframework.beans.factory.annotation.Value;
@@ -75,6 +76,9 @@ public class ConfigAppAuthConfigSelector implements AppAuthConfigSelector {
     @Override
     public List<AppAuthConfig> selectAll() throws NacosException {
         Page<ConfigKey> page = persistService.findAllConfigKey(1, Integer.MAX_VALUE, authNamespaceId);
+        if (page == null) {
+            return Lists.newArrayList();
+        }
         List<AppAuthConfig> resultConfigs = new ArrayList<>(page.getTotalCount());
         for (ConfigKey configKey : page.getPageItems()) {
             if (!authAppGroup.equals(configKey.getGroup())) {
