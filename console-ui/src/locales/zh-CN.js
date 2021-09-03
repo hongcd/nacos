@@ -357,6 +357,7 @@ const I18N_CONF = {
     tags: '标签:',
     pleaseEnterTag: '请输入标签',
     groupIdCannotBeLonger: '归属应用:',
+    appNotEmpty: '归属应用不能为空',
     description: '描述:',
     targetEnvironment: '配置格式:',
     configurationFormat: '配置内容:',

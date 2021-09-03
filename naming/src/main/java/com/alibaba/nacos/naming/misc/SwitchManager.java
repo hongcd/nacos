@@ -292,6 +292,10 @@ public class SwitchManager implements RecordListener<SwitchDomain> {
                 switchDomain.setDoubleWriteEnabled(BooleanUtils.toBoolean(value));
             }
             
+            if (entry.equals(SwitchEntry.HMAC_MAX_OFFSET_MILLISECONDS)) {
+                switchDomain.setHmacMaxOffsetMilliseconds(Integer.parseInt(value));
+            }
+            
             if (debug) {
                 update(switchDomain);
             } else {
@@ -343,6 +347,7 @@ public class SwitchManager implements RecordListener<SwitchDomain> {
         switchDomain.setDefaultInstanceEphemeral(newSwitchDomain.isDefaultInstanceEphemeral());
         switchDomain.setLightBeatEnabled(newSwitchDomain.isLightBeatEnabled());
         switchDomain.setDoubleWriteEnabled(newSwitchDomain.isDoubleWriteEnabled());
+        switchDomain.setHmacMaxOffsetMilliseconds(newSwitchDomain.getHmacMaxOffsetMilliseconds());
     }
     
     public SwitchDomain getSwitchDomain() {

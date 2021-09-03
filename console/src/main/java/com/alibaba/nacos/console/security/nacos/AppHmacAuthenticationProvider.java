@@ -22,6 +22,7 @@ import com.alibaba.nacos.config.server.utils.LogUtil;
 import com.alibaba.nacos.core.selector.AppAuthConfigSelector;
 import com.alibaba.nacos.core.model.AppAuthConfig;
 import com.alibaba.nacos.core.model.AppEnv;
+import com.alibaba.nacos.naming.misc.SwitchDomain;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.CredentialsExpiredException;
@@ -46,9 +47,12 @@ import static com.alibaba.nacos.api.common.Constants.SERVICE_INFO_SPLITER;
 public class AppHmacAuthenticationProvider implements AuthenticationProvider {
 
     private final AppAuthConfigSelector appAuthConfigSelector;
+    
+    private final SwitchDomain switchDomain;
 
-    public AppHmacAuthenticationProvider(AppAuthConfigSelector appAuthConfigSelector) {
+    public AppHmacAuthenticationProvider(AppAuthConfigSelector appAuthConfigSelector, SwitchDomain switchDomain) {
         this.appAuthConfigSelector = appAuthConfigSelector;
+        this.switchDomain = switchDomain;
     }
 
     @Override
@@ -74,7 +78,7 @@ public class AppHmacAuthenticationProvider implements AuthenticationProvider {
         }
         long requestTimestamp = Long.parseLong(config.getTimestamp());
         long currentTimestamp = System.currentTimeMillis();
-        int maxOffsetMilliseconds = 60000;
+        int maxOffsetMilliseconds = switchDomain.getHmacMaxOffsetMilliseconds();
         if (requestTimestamp < (currentTimestamp - maxOffsetMilliseconds)
                 || requestTimestamp > (currentTimestamp + maxOffsetMilliseconds)) {
             LogUtil.DEFAULT_LOG.warn("[authenticate] request expired, requestTimestamp: {}, currentTimestamp: {}",

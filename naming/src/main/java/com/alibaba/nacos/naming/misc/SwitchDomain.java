@@ -108,6 +108,8 @@ public class SwitchDomain implements Record, Cloneable {
     
     private boolean defaultInstanceEphemeral = true;
     
+    private int hmacMaxOffsetMilliseconds = 60000;
+    
     public boolean isEnableAuthentication() {
         return enableAuthentication;
     }
@@ -397,6 +399,14 @@ public class SwitchDomain implements Record, Cloneable {
     
     public void setDoubleWriteEnabled(boolean doubleWriteEnabled) {
         this.doubleWriteEnabled = doubleWriteEnabled;
+    }
+    
+    public int getHmacMaxOffsetMilliseconds() {
+        return hmacMaxOffsetMilliseconds;
+    }
+    
+    public void setHmacMaxOffsetMilliseconds(int hmacMaxOffsetMilliseconds) {
+        this.hmacMaxOffsetMilliseconds = hmacMaxOffsetMilliseconds;
     }
     
     @Override

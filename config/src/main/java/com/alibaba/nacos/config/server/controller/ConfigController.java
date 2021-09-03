@@ -20,6 +20,7 @@ import com.alibaba.nacos.api.config.ConfigType;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.auth.annotation.Secured;
 import com.alibaba.nacos.auth.common.ActionTypes;
+import com.alibaba.nacos.auth.exception.AccessException;
 import com.alibaba.nacos.common.model.RestResult;
 import com.alibaba.nacos.common.model.RestResultUtils;
 import com.alibaba.nacos.common.utils.MapUtil;
@@ -139,7 +140,18 @@ public class ConfigController {
             @RequestParam(value = "effect", required = false) String effect,
             @RequestParam(value = "type", required = false) String type,
             @RequestParam(value = "schema", required = false) String schema) throws NacosException {
-        
+    
+        Optional<List<String>> userApps = getUserApps(ActionTypes.WRITE.toString());
+        if (!userApps.isPresent()) {
+            return false;
+        }
+        List<String> apps = userApps.get();
+        if (!apps.isEmpty()) {
+            boolean anyMatch = apps.stream().anyMatch(app -> app.equals(appName));
+            if (!anyMatch) {
+                return false;
+            }
+        }
         final String srcIp = RequestUtil.getRemoteIp(request);
         final String requestIpApp = RequestUtil.getAppName(request);
         srcUser = RequestUtil.getSrcUserName(request);

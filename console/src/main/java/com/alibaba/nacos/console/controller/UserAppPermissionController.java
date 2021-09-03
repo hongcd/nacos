@@ -134,11 +134,11 @@ public class UserAppPermissionController {
     @DeleteMapping
     @Secured(resource = NacosAuthConfig.CONSOLE_RESOURCE_NAME_PREFIX + "userAppPermissions", action = ActionTypes.WRITE)
     public Object deletePermission(@RequestParam String username, @RequestParam String app) throws AccessException {
-        nacosRoleService.deleteUserAppPermission(username, app);
         String loginUser = RequestUtil.getSrcUserName(RequestUtil.getRequest());
         if (!hasPermission(loginUser, username, app)) {
             throw new AccessException("Permission denied");
         }
+        nacosRoleService.deleteUserAppPermission(username, app);
         return RestResultUtils.success("delete user app permission ok!");
     }
 

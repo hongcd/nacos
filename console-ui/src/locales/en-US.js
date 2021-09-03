@@ -360,6 +360,7 @@ const I18N_CONF = {
     tags: 'Tags:',
     pleaseEnterTag: 'Enter Tag',
     groupIdCannotBeLonger: 'Application:',
+    appNotEmpty: 'Application cannot be empty',
     description: 'Description:',
     targetEnvironment: 'Format:',
     configurationFormat: 'Configuration Content',

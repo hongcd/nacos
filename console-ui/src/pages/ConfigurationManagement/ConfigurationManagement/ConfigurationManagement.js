@@ -81,6 +81,8 @@ class ConfigurationManagement extends React.Component {
     this.edasAppId = getParams('edasAppId') || '';
     this.edasAppName = getParams('edasAppName') || '';
     this.inApp = this.edasAppId;
+    const { username = '' } = JSON.parse(localStorage.token || '{}');
+    this.currentUsername = username;
     this.state = {
       value: '',
       visible: false,
@@ -1188,7 +1190,10 @@ class ConfigurationManagement extends React.Component {
                   </Button>
                 </Form.Item>
 
-                <Form.Item label={''}>
+                <Form.Item
+                  label={''}
+                  style={this.currentUsername === 'nacos' ? {} : { display: 'none' }}
+                >
                   <Button
                     type={'primary'}
                     style={{ marginRight: 10 }}

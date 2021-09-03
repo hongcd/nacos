@@ -86,11 +86,13 @@ class ConfigEditor extends React.Component {
       },
       tagDataSource: [],
       subscriberDataSource: [],
-      openAdvancedSettings: false,
+      openAdvancedSettings: true,
       editorClass: 'editor-normal',
     };
     this.successDialog = React.createRef();
     this.diffEditorDialog = React.createRef();
+    const { username = '' } = JSON.parse(localStorage.token || '{}');
+    this.currentUsername = username;
   }
 
   componentDidMount() {
@@ -526,8 +528,12 @@ class ConfigEditor extends React.Component {
                     hasClear
                   />
                 </Form.Item>
-                <Form.Item label={locale.targetEnvironment}>
-                  <Input value={form.appName} onChange={appName => this.changeForm({ appName })} />
+                <Form.Item label={locale.targetEnvironment} required>
+                  <Input
+                    value={form.appName}
+                    onChange={appName => this.changeForm({ appName })}
+                    disabled={this.currentUsername !== 'nacos'}
+                  />
                 </Form.Item>
               </>
             )}

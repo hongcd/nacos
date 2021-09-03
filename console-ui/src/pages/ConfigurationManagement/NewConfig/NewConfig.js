@@ -75,7 +75,7 @@ class NewConfig extends React.Component {
       tagLst: [],
       config_tags: [],
       envvalues: [],
-      showmore: false,
+      showmore: true,
       loading: false,
       encrypt: false,
       addonBefore: '',
@@ -544,8 +544,18 @@ class NewConfig extends React.Component {
             <FormItem
               label={locale.groupIdCannotBeLonger}
               className={`more-item${!this.state.showmore ? ' hide' : ''}`}
+              required
             >
-              <Input {...init('appName')} readOnly={this.inApp} />
+              <Input
+                {...init('appName', {
+                  rules: [
+                    {
+                      required: true,
+                      message: locale.appNotEmpty,
+                    },
+                  ],
+                })}
+              />
             </FormItem>
             <FormItem label=" ">
               <div className="more-container">
